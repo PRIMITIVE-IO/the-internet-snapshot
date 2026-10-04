@@ -1,0 +1,882 @@
+{
+ "format": "internet-snapshot",
+ "format_version": "0.2",
+ "snapshot_id": "20261004-df636199",
+ "created_at": "2026-10-04T22:17:33Z",
+ "coordinate_system": {
+  "handedness": "left",
+  "up": "+Y",
+  "forward": "+Z",
+  "right": "+X",
+  "units": "m",
+  "azimuth": "degrees from +Z toward +X",
+  "elevation": "degrees above XZ plane",
+  "geo_mapping": {
+   "az": "longitude",
+   "el": "latitude*0.85"
+  }
+ },
+ "shells": {
+  "home": 0.0,
+  "backbone": 300.0,
+  "edge": 600.0,
+  "services": 1000.0
+ },
+ "lods": [
+  {
+   "level": 0,
+   "file": "lod0.json",
+   "nodes": 17,
+   "edges": 29,
+   "bytes": 11307
+  },
+  {
+   "level": 1,
+   "file": "lod1.json",
+   "nodes": 86,
+   "edges": 294,
+   "bytes": 79518
+  },
+  {
+   "level": 2,
+   "file": "lod2.json",
+   "nodes": 2006,
+   "edges": 2892,
+   "bytes": 1303253
+  },
+  {
+   "level": 3,
+   "tiling": {
+    "scheme": "healpix-nested",
+    "order": 1,
+    "path": "lod3/{order}-{ipix}.json"
+   },
+   "tiles": [
+    {
+     "ipix": 0,
+     "nodes": 115,
+     "edges": 88,
+     "bytes": 64830
+    },
+    {
+     "ipix": 1,
+     "nodes": 66,
+     "edges": 250,
+     "bytes": 65062
+    },
+    {
+     "ipix": 2,
+     "nodes": 333,
+     "edges": 455,
+     "bytes": 209281
+    },
+    {
+     "ipix": 3,
+     "nodes": 58,
+     "edges": 43,
+     "bytes": 32408
+    },
+    {
+     "ipix": 4,
+     "nodes": 103,
+     "edges": 105,
+     "bytes": 60447
+    },
+    {
+     "ipix": 5,
+     "nodes": 45,
+     "edges": 40,
+     "bytes": 26594
+    },
+    {
+     "ipix": 6,
+     "nodes": 219,
+     "edges": 228,
+     "bytes": 129403
+    },
+    {
+     "ipix": 7,
+     "nodes": 112,
+     "edges": 263,
+     "bytes": 88979
+    },
+    {
+     "ipix": 8,
+     "nodes": 5,
+     "edges": 6,
+     "bytes": 3109
+    },
+    {
+     "ipix": 9,
+     "nodes": 239,
+     "edges": 51,
+     "bytes": 114395
+    },
+    {
+     "ipix": 10,
+     "nodes": 5,
+     "edges": 7,
+     "bytes": 3415
+    },
+    {
+     "ipix": 11,
+     "nodes": 106,
+     "edges": 103,
+     "bytes": 64142
+    },
+    {
+     "ipix": 12,
+     "nodes": 31,
+     "edges": 51,
+     "bytes": 21917
+    },
+    {
+     "ipix": 13,
+     "nodes": 92,
+     "edges": 83,
+     "bytes": 51927
+    },
+    {
+     "ipix": 14,
+     "nodes": 71,
+     "edges": 208,
+     "bytes": 62389
+    },
+    {
+     "ipix": 15,
+     "nodes": 103,
+     "edges": 270,
+     "bytes": 86694
+    },
+    {
+     "ipix": 16,
+     "nodes": 40,
+     "edges": 31,
+     "bytes": 22423
+    },
+    {
+     "ipix": 17,
+     "nodes": 56,
+     "edges": 42,
+     "bytes": 31080
+    },
+    {
+     "ipix": 18,
+     "nodes": 2,
+     "edges": 4,
+     "bytes": 1591
+    },
+    {
+     "ipix": 19,
+     "nodes": 62,
+     "edges": 174,
+     "bytes": 51715
+    },
+    {
+     "ipix": 20,
+     "nodes": 36,
+     "edges": 34,
+     "bytes": 21392
+    },
+    {
+     "ipix": 21,
+     "nodes": 77,
+     "edges": 70,
+     "bytes": 44035
+    },
+    {
+     "ipix": 22,
+     "nodes": 113,
+     "edges": 109,
+     "bytes": 66277
+    },
+    {
+     "ipix": 23,
+     "nodes": 107,
+     "edges": 321,
+     "bytes": 92988
+    },
+    {
+     "ipix": 24,
+     "nodes": 28,
+     "edges": 23,
+     "bytes": 15636
+    },
+    {
+     "ipix": 25,
+     "nodes": 13,
+     "edges": 14,
+     "bytes": 7738
+    },
+    {
+     "ipix": 26,
+     "nodes": 9,
+     "edges": 13,
+     "bytes": 6132
+    },
+    {
+     "ipix": 27,
+     "nodes": 0,
+     "edges": 2,
+     "bytes": 404
+    },
+    {
+     "ipix": 28,
+     "nodes": 27,
+     "edges": 24,
+     "bytes": 16062
+    },
+    {
+     "ipix": 29,
+     "nodes": 39,
+     "edges": 3,
+     "bytes": 18203
+    },
+    {
+     "ipix": 30,
+     "nodes": 3,
+     "edges": 4,
+     "bytes": 2086
+    },
+    {
+     "ipix": 31,
+     "nodes": 307,
+     "edges": 950,
+     "bytes": 276256
+    },
+    {
+     "ipix": 32,
+     "nodes": 246,
+     "edges": 247,
+     "bytes": 144533
+    },
+    {
+     "ipix": 33,
+     "nodes": 121,
+     "edges": 118,
+     "bytes": 71511
+    },
+    {
+     "ipix": 34,
+     "nodes": 76,
+     "edges": 76,
+     "bytes": 44617
+    },
+    {
+     "ipix": 35,
+     "nodes": 45,
+     "edges": 38,
+     "bytes": 25766
+    },
+    {
+     "ipix": 36,
+     "nodes": 354,
+     "edges": 334,
+     "bytes": 202391
+    },
+    {
+     "ipix": 37,
+     "nodes": 36,
+     "edges": 24,
+     "bytes": 19166
+    },
+    {
+     "ipix": 38,
+     "nodes": 35,
+     "edges": 30,
+     "bytes": 20009
+    },
+    {
+     "ipix": 39,
+     "nodes": 41,
+     "edges": 40,
+     "bytes": 24110
+    },
+    {
+     "ipix": 40,
+     "nodes": 3194,
+     "edges": 3147,
+     "bytes": 1872424
+    },
+    {
+     "ipix": 41,
+     "nodes": 396,
+     "edges": 384,
+     "bytes": 230272
+    },
+    {
+     "ipix": 42,
+     "nodes": 95,
+     "edges": 79,
+     "bytes": 53356
+    },
+    {
+     "ipix": 43,
+     "nodes": 32,
+     "edges": 26,
+     "bytes": 18012
+    },
+    {
+     "ipix": 44,
+     "nodes": 1412,
+     "edges": 1397,
+     "bytes": 824555
+    },
+    {
+     "ipix": 45,
+     "nodes": 58,
+     "edges": 43,
+     "bytes": 31620
+    },
+    {
+     "ipix": 46,
+     "nodes": 239,
+     "edges": 218,
+     "bytes": 136277
+    },
+    {
+     "ipix": 47,
+     "nodes": 46,
+     "edges": 56,
+     "bytes": 29178
+    }
+   ],
+   "nodes": 9048,
+   "edges": 10326
+  }
+ ],
+ "realms": [
+  {
+   "id": "realm:knowledge",
+   "label": "Knowledge & Discovery",
+   "color": "#AED581",
+   "categories": [
+    "cat:search",
+    "cat:reference",
+    "cat:education",
+    "cat:maps"
+   ]
+  },
+  {
+   "id": "realm:communication",
+   "label": "Communication",
+   "color": "#4FC3F7",
+   "categories": [
+    "cat:social",
+    "cat:messaging",
+    "cat:email",
+    "cat:video-calls",
+    "cat:forums"
+   ]
+  },
+  {
+   "id": "realm:media",
+   "label": "Media & Entertainment",
+   "color": "#F06292",
+   "categories": [
+    "cat:video",
+    "cat:music",
+    "cat:gaming",
+    "cat:news"
+   ]
+  },
+  {
+   "id": "realm:commerce",
+   "label": "Commerce & Finance",
+   "color": "#FFB74D",
+   "categories": [
+    "cat:shopping",
+    "cat:payments",
+    "cat:banking",
+    "cat:crypto",
+    "cat:travel"
+   ]
+  },
+  {
+   "id": "realm:adtech",
+   "label": "Advertising & Analytics",
+   "color": "#FF8A65",
+   "categories": [
+    "cat:ads",
+    "cat:analytics"
+   ]
+  },
+  {
+   "id": "realm:cloud",
+   "label": "Cloud & Edge",
+   "color": "#7986CB",
+   "categories": [
+    "cat:cloud",
+    "cat:cdn",
+    "cat:dns",
+    "cat:identity"
+   ]
+  },
+  {
+   "id": "realm:developer",
+   "label": "Developer & AI",
+   "color": "#64FFDA",
+   "categories": [
+    "cat:code",
+    "cat:devtools",
+    "cat:ai",
+    "cat:apis"
+   ]
+  },
+  {
+   "id": "realm:work",
+   "label": "Work & Productivity",
+   "color": "#B39DDB",
+   "categories": [
+    "cat:productivity",
+    "cat:collaboration",
+    "cat:storage",
+    "cat:business",
+    "cat:design"
+   ]
+  },
+  {
+   "id": "realm:society",
+   "label": "Society & Public",
+   "color": "#FFF176",
+   "categories": [
+    "cat:government",
+    "cat:health",
+    "cat:nonprofit"
+   ]
+  },
+  {
+   "id": "realm:longtail",
+   "label": "The Long Tail",
+   "color": "#BDBDBD",
+   "categories": [
+    "cat:web",
+    "cat:adult"
+   ]
+  }
+ ],
+ "categories": [
+  {
+   "id": "cat:search",
+   "label": "Search",
+   "realm": "realm:knowledge",
+   "color": "#AED581"
+  },
+  {
+   "id": "cat:reference",
+   "label": "Reference & Wikis",
+   "realm": "realm:knowledge",
+   "color": "#AED581"
+  },
+  {
+   "id": "cat:education",
+   "label": "Education",
+   "realm": "realm:knowledge",
+   "color": "#AED581"
+  },
+  {
+   "id": "cat:maps",
+   "label": "Maps & Local",
+   "realm": "realm:knowledge",
+   "color": "#AED581"
+  },
+  {
+   "id": "cat:social",
+   "label": "Social Networks",
+   "realm": "realm:communication",
+   "color": "#4FC3F7"
+  },
+  {
+   "id": "cat:messaging",
+   "label": "Messaging",
+   "realm": "realm:communication",
+   "color": "#4FC3F7"
+  },
+  {
+   "id": "cat:email",
+   "label": "Email",
+   "realm": "realm:communication",
+   "color": "#4FC3F7"
+  },
+  {
+   "id": "cat:video-calls",
+   "label": "Video Conferencing",
+   "realm": "realm:communication",
+   "color": "#4FC3F7"
+  },
+  {
+   "id": "cat:forums",
+   "label": "Communities & Forums",
+   "realm": "realm:communication",
+   "color": "#4FC3F7"
+  },
+  {
+   "id": "cat:video",
+   "label": "Video Streaming",
+   "realm": "realm:media",
+   "color": "#F06292"
+  },
+  {
+   "id": "cat:music",
+   "label": "Music & Audio",
+   "realm": "realm:media",
+   "color": "#F06292"
+  },
+  {
+   "id": "cat:gaming",
+   "label": "Gaming",
+   "realm": "realm:media",
+   "color": "#F06292"
+  },
+  {
+   "id": "cat:news",
+   "label": "News & Publishing",
+   "realm": "realm:media",
+   "color": "#F06292"
+  },
+  {
+   "id": "cat:shopping",
+   "label": "E-commerce & Marketplaces",
+   "realm": "realm:commerce",
+   "color": "#FFB74D"
+  },
+  {
+   "id": "cat:payments",
+   "label": "Payments",
+   "realm": "realm:commerce",
+   "color": "#FFB74D"
+  },
+  {
+   "id": "cat:banking",
+   "label": "Banking & Investing",
+   "realm": "realm:commerce",
+   "color": "#FFB74D"
+  },
+  {
+   "id": "cat:crypto",
+   "label": "Crypto",
+   "realm": "realm:commerce",
+   "color": "#FFB74D"
+  },
+  {
+   "id": "cat:travel",
+   "label": "Travel & Mobility",
+   "realm": "realm:commerce",
+   "color": "#FFB74D"
+  },
+  {
+   "id": "cat:ads",
+   "label": "Advertising",
+   "realm": "realm:adtech",
+   "color": "#FF8A65"
+  },
+  {
+   "id": "cat:analytics",
+   "label": "Analytics & Measurement",
+   "realm": "realm:adtech",
+   "color": "#FF8A65"
+  },
+  {
+   "id": "cat:cloud",
+   "label": "Cloud Platforms",
+   "realm": "realm:cloud",
+   "color": "#7986CB"
+  },
+  {
+   "id": "cat:cdn",
+   "label": "CDN & Edge",
+   "realm": "realm:cloud",
+   "color": "#7986CB"
+  },
+  {
+   "id": "cat:dns",
+   "label": "DNS & Domains",
+   "realm": "realm:cloud",
+   "color": "#7986CB"
+  },
+  {
+   "id": "cat:identity",
+   "label": "Identity & Security",
+   "realm": "realm:cloud",
+   "color": "#7986CB"
+  },
+  {
+   "id": "cat:code",
+   "label": "Code Hosting",
+   "realm": "realm:developer",
+   "color": "#64FFDA"
+  },
+  {
+   "id": "cat:devtools",
+   "label": "Developer Tools & Registries",
+   "realm": "realm:developer",
+   "color": "#64FFDA"
+  },
+  {
+   "id": "cat:ai",
+   "label": "AI Platforms",
+   "realm": "realm:developer",
+   "color": "#64FFDA"
+  },
+  {
+   "id": "cat:apis",
+   "label": "APIs & Backend Services",
+   "realm": "realm:developer",
+   "color": "#64FFDA"
+  },
+  {
+   "id": "cat:productivity",
+   "label": "Office & Productivity",
+   "realm": "realm:work",
+   "color": "#B39DDB"
+  },
+  {
+   "id": "cat:collaboration",
+   "label": "Team Collaboration",
+   "realm": "realm:work",
+   "color": "#B39DDB"
+  },
+  {
+   "id": "cat:storage",
+   "label": "Cloud Storage & Files",
+   "realm": "realm:work",
+   "color": "#B39DDB"
+  },
+  {
+   "id": "cat:business",
+   "label": "Business & HR SaaS",
+   "realm": "realm:work",
+   "color": "#B39DDB"
+  },
+  {
+   "id": "cat:design",
+   "label": "Design & Creative",
+   "realm": "realm:work",
+   "color": "#B39DDB"
+  },
+  {
+   "id": "cat:government",
+   "label": "Government",
+   "realm": "realm:society",
+   "color": "#FFF176"
+  },
+  {
+   "id": "cat:health",
+   "label": "Health & Fitness",
+   "realm": "realm:society",
+   "color": "#FFF176"
+  },
+  {
+   "id": "cat:nonprofit",
+   "label": "Nonprofit & Causes",
+   "realm": "realm:society",
+   "color": "#FFF176"
+  },
+  {
+   "id": "cat:web",
+   "label": "General Web",
+   "realm": "realm:longtail",
+   "color": "#BDBDBD"
+  },
+  {
+   "id": "cat:adult",
+   "label": "Adult",
+   "realm": "realm:longtail",
+   "color": "#BDBDBD"
+  }
+ ],
+ "network_roles": [
+  {
+   "id": "tier1",
+   "label": "Tier-1 transit",
+   "color": "#FFD54F"
+  },
+  {
+   "id": "transit",
+   "label": "Transit carrier",
+   "color": "#FFB300"
+  },
+  {
+   "id": "access",
+   "label": "Access / eyeball ISP",
+   "color": "#81C784"
+  },
+  {
+   "id": "cloud",
+   "label": "Cloud provider",
+   "color": "#7986CB"
+  },
+  {
+   "id": "cdn",
+   "label": "CDN / edge",
+   "color": "#4DB6AC"
+  },
+  {
+   "id": "content",
+   "label": "Content network",
+   "color": "#BA68C8"
+  },
+  {
+   "id": "hosting",
+   "label": "Hosting / data center",
+   "color": "#A1887F"
+  },
+  {
+   "id": "enterprise",
+   "label": "Enterprise",
+   "color": "#90A4AE"
+  },
+  {
+   "id": "education",
+   "label": "Research & education",
+   "color": "#64B5F6"
+  },
+  {
+   "id": "government",
+   "label": "Government",
+   "color": "#E57373"
+  },
+  {
+   "id": "ixp",
+   "label": "Internet exchange point",
+   "color": "#FFFFFF"
+  },
+  {
+   "id": "region",
+   "label": "Region",
+   "color": "#ECEFF1"
+  }
+ ],
+ "files": {
+  "anchors": "anchors.json",
+  "asgraph": "asgraph.json",
+  "search": "search.json",
+  "domains": "domains.json",
+  "sites": "sites/index.json"
+ },
+ "stats": {
+  "nodes": 11157,
+  "edges": 13541,
+  "categorys": 38,
+  "ixps": 23,
+  "networks": 2581,
+  "orgs": 66,
+  "realms": 10,
+  "regions": 7,
+  "services": 8432,
+  "relationship_source": "heuristic-seed"
+ },
+ "sources": [
+  {
+   "id": "psl",
+   "name": "Public Suffix List",
+   "url": "https://publicsuffix.org/",
+   "license": "MPL-2.0",
+   "license_class": "open",
+   "download_url": "https://raw.githubusercontent.com/publicsuffix/list/main/public_suffix_list.dat",
+   "retrieved_at": "2026-10-04T21:10:56+00:00",
+   "sha256": "102b252c18b5f87f4c81f017e75282a82c18e00cd0c2e601b5b02a0f7a601f2c",
+   "attribution": "Public Suffix List, Mozilla Foundation (MPL-2.0)"
+  },
+  {
+   "id": "crux",
+   "name": "Chrome UX Report top lists (global)",
+   "url": "https://developer.chrome.com/docs/crux",
+   "license": "CC BY 4.0",
+   "license_class": "open",
+   "download_url": "https://raw.githubusercontent.com/zakird/crux-top-lists/main/data/global/current.csv.gz",
+   "retrieved_at": "2026-10-04T21:10:55+00:00",
+   "sha256": "4ae541994a7e28f2a9ddd33f711effde9346c4128c506782fa77c268d8f3905b",
+   "attribution": "Chrome UX Report by Google (CC BY 4.0), via zakird/crux-top-lists"
+  },
+  {
+   "id": "asninfo",
+   "name": "ipverse asn-info (AS names and countries)",
+   "url": "https://github.com/ipverse/asn-info",
+   "license": "CC0 1.0",
+   "license_class": "open",
+   "download_url": "https://raw.githubusercontent.com/ipverse/asn-info/master/as.csv",
+   "retrieved_at": "2026-10-04T21:10:57+00:00",
+   "sha256": "7e36ce8a0c5bb56de032050add67c6c607c15af7e38163a9a61281532ead92e9",
+   "attribution": "ipverse/asn-info (CC0)"
+  },
+  {
+   "id": "originasn",
+   "name": "IP prefix to origin ASN (sapics/ip-location-db origin-asn)",
+   "url": "https://github.com/sapics/ip-location-db",
+   "license": "PDDL 1.0",
+   "license_class": "open",
+   "download_url": "https://github.com/sapics/ip-location-db/releases/download/latest/origin-asn-ipv4.csv",
+   "retrieved_at": "2026-10-04T21:10:58+00:00",
+   "sha256": "8cc754e50ba0af36d8bca7ad0ce74c6b20edb77c7e85e4c16ec7d6333bf33e2e",
+   "attribution": "sapics/ip-location-db origin-asn (PDDL)"
+  },
+  {
+   "id": "countries",
+   "name": "Country centroids (Google DSPL canonical countries)",
+   "url": "https://developers.google.com/public-data/docs/canonical/countries_csv",
+   "license": "CC BY 4.0",
+   "license_class": "open",
+   "download_url": "https://raw.githubusercontent.com/google/dspl/master/samples/google/canonical/countries.csv",
+   "retrieved_at": "2026-10-04T21:10:58+00:00",
+   "sha256": "1bef6d229f833b6ec31bd92bf80977ddf36da1e18b76f0047a1ed3e06915a4a5",
+   "attribution": "Country centroids from Google DSPL (CC BY 4.0)"
+  },
+  {
+   "id": "simpleicons",
+   "name": "Simple Icons brand index",
+   "url": "https://simpleicons.org/",
+   "license": "CC0 1.0 (logos remain trademarks of their owners)",
+   "license_class": "open",
+   "download_url": "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/data/simple-icons.json",
+   "retrieved_at": "2026-10-04T21:10:59+00:00",
+   "sha256": "2cf001be5a29eb66438ce826b1e1ba94dd0c060a45c144195372f1d9f9cf9f41",
+   "attribution": "Simple Icons (CC0); brand logos are trademarks of their respective owners"
+  },
+  {
+   "id": "seed",
+   "name": "Curated seed catalogue (this repository)",
+   "url": "https://github.com/PRIMITIVE-IO/the-internet-snapshot/tree/main/seed",
+   "license": "MIT",
+   "license_class": "open",
+   "attribution": "Curated seed catalogue, the-internet-snapshot contributors (MIT)"
+  },
+  {
+   "id": "dns",
+   "name": "DNS A-record lookups via the system resolver (build-time)",
+   "url": "",
+   "license": "n/a (factual)",
+   "license_class": "open",
+   "attribution": ""
+  },
+  {
+   "id": "github_rest",
+   "name": "GitHub REST API description (OpenAPI)",
+   "url": "https://github.com/github/rest-api-description",
+   "license": "MIT",
+   "license_class": "open",
+   "attribution": "GitHub REST API description, GitHub Inc. (MIT)"
+  },
+  {
+   "id": "google_discovery",
+   "name": "Google API Discovery directory",
+   "url": "https://developers.google.com/discovery",
+   "license": "Google APIs Terms of Service (public API metadata)",
+   "license_class": "open",
+   "attribution": "Google API Discovery Service directory"
+  },
+  {
+   "id": "github_ranking",
+   "name": "EvanLi/Github-Ranking (daily top-100 repositories per language)",
+   "url": "https://github.com/EvanLi/Github-Ranking",
+   "license": "MIT",
+   "license_class": "open",
+   "attribution": "EvanLi/Github-Ranking (MIT), from public GitHub repository metadata"
+  }
+ ],
+ "notes": [
+  "resolved 15487 hostnames via DNS",
+  "AS relationships are heuristic (seed roles + geography); enable CAIDA as-rel2 for inferred BGP relationships"
+ ],
+ "attribution": "Public Suffix List, Mozilla Foundation (MPL-2.0); Chrome UX Report by Google (CC BY 4.0), via zakird/crux-top-lists; ipverse/asn-info (CC0); sapics/ip-location-db origin-asn (PDDL); Country centroids from Google DSPL (CC BY 4.0); Simple Icons (CC0); brand logos are trademarks of their respective owners; Curated seed catalogue, the-internet-snapshot contributors (MIT); GitHub REST API description, GitHub Inc. (MIT); Google API Discovery Service directory; EvanLi/Github-Ranking (MIT), from public GitHub repository metadata"
+}

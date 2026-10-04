@@ -117,7 +117,8 @@ def relax(X: np.ndarray, *, iters: int, springs: list[tuple[int, int, float]], s
         node_region, trees, region_cells_vec = containment
         # spacing should reflect local density inside each region
         counts = np.bincount(node_region, minlength=int(node_region.max()) + 1)
-        area = np.array([len(region_cells_vec.get(i, [])) for i in range(len(counts))], dtype=float)
+        area = np.array([len(region_cells_vec[i][1]) if i in region_cells_vec else 1 for i in range(len(counts))],
+                        dtype=float)
         local = np.sqrt(4 * math.pi * np.maximum(area, 1) / NPIX / np.maximum(counts, 1))
         node_spacing = local[node_region]
     else:

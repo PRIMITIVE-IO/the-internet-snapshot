@@ -5,22 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Internet Snapshot Viewer</title>
 <style>
-  :root { --bg: #05070c; --fg: #e8ecf3; --muted: #8a94a6; --panel: rgba(12,16,26,.86); --accent: #64ffda; }
+  :root { --bg: #05070c; --fg: #e8ecf3; --muted: #8a94a6; --panel: rgba(12,16,26,.88); --accent: #64ffda; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 13px/1.4 system-ui, sans-serif; overflow: hidden; }
-  #ui { position: absolute; top: 12px; left: 12px; width: 300px; max-width: calc(100vw - 24px); background: var(--panel);
-        border: 1px solid #1f2a3d; border-radius: 10px; padding: 12px; box-sizing: border-box; }
-  #ui h1 { font-size: 14px; margin: 0 0 6px; }
+  #ui { position: absolute; top: 12px; left: 12px; width: 320px; max-width: calc(100vw - 24px); max-height: calc(100vh - 60px); overflow: auto;
+        background: var(--panel); border: 1px solid #1f2a3d; border-radius: 10px; padding: 12px; box-sizing: border-box; }
+  #ui h1 { font-size: 14px; margin: 0 0 4px; }
   #ui .muted { color: var(--muted); font-size: 12px; }
   #ui label { display: inline-flex; gap: 4px; margin: 2px 8px 2px 0; align-items: center; }
   #ui input[type=text] { width: 100%; box-sizing: border-box; background: #0b1220; color: var(--fg); border: 1px solid #263248;
         border-radius: 6px; padding: 6px 8px; margin-top: 6px; }
-  #ui button { background: #12304a; color: var(--fg); border: 1px solid #24507a; border-radius: 6px; padding: 5px 10px; margin-top: 6px; cursor: pointer; }
+  #ui button { background: #12304a; color: var(--fg); border: 1px solid #24507a; border-radius: 6px; padding: 5px 10px; margin: 6px 6px 0 0; cursor: pointer; }
+  #ui button[hidden] { display: none; }
   #info { margin-top: 8px; min-height: 2.8em; white-space: pre-wrap; }
-  #tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid #263248; border-radius: 6px;
-         padding: 4px 8px; display: none; font-size: 12px; }
-  #credits { position: absolute; bottom: 6px; left: 12px; right: 12px; color: var(--muted); font-size: 10px; }
-  .lbl { position: absolute; pointer-events: none; transform: translate(-50%, -50%); white-space: nowrap; text-shadow: 0 0 4px #000; }
-  .lbl.realm { font-size: 15px; font-weight: 600; } .lbl.cat { font-size: 11px; opacity: .8; } .lbl.region { font-size: 11px; color: #cfd8dc; }
+  #credits { position: absolute; bottom: 6px; left: 12px; right: 12px; color: var(--muted); font-size: 10px; pointer-events: none; }
+  .lbl { position: absolute; pointer-events: none; transform: translate(-50%, -50%); white-space: nowrap; text-shadow: 0 0 4px #000, 0 0 2px #000; }
+  .lbl.l0 { font-size: 15px; font-weight: 600; } .lbl.l1 { font-size: 11px; opacity: .85; } .lbl.l2 { font-size: 10px; opacity: .7; }
 </style>
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js" } }
@@ -28,9 +27,9 @@
 </head>
 <body>
 <div id="ui">
-  <h1>The Internet Snapshot</h1>
+  <h1 id="title">The Internet Snapshot</h1>
   <div class="muted" id="sid">loading…</div>
-  <div style="margin-top:6px">
+  <div id="globalControls" style="margin-top:6px">
     LOD: <label><input type="checkbox" data-lod="0" checked>0</label><label><input type="checkbox" data-lod="1" checked>1</label>
     <label><input type="checkbox" data-lod="2" checked>2</label><label><input type="checkbox" data-lod="3">3</label>
   </div>
@@ -38,47 +37,70 @@
     <label><input type="checkbox" id="edges" checked>edges</label><label><input type="checkbox" id="labels" checked>labels</label>
   </div>
   <input type="text" id="to" placeholder="route to… (e.g. gmail.com)">
-  <input type="text" id="asn" placeholder="home ASN (blank = detect from IP)">
-  <button id="go">Trace route</button>
-  <div id="info" class="muted">Drag to look around · wheel to zoom (FOV) · click a node</div>
+  <input type="text" id="home" placeholder="home ASN or public IPv4 (blank = detect, server only)">
+  <button id="go">Trace route</button><button id="enter" hidden>Enter site</button><button id="back" hidden>⟵ Back</button>
+  <div><button id="codeUniverse">Code universe</button><button id="locateBtn">Locate URL</button></div>
+  <div id="info" class="muted">Drag to look around · wheel to zoom · click a node</div>
 </div>
-<div id="tip"></div>
 <div id="credits"></div>
 <script type="module">
 import * as THREE from "three";
 
+// ---- where the data and (optional) API live -------------------------------------------------
 const params = new URLSearchParams(location.search);
-const BASE = params.get("base") || new URL("../v1/", location.href).href;   // any static mirror of public/ works
-const toThree = p => new THREE.Vector3(p[0], p[1], -p[2]);                  // Unity (left-handed) -> three.js
+const onServer = location.pathname.includes("/viewer/");
+const DATA = params.get("base") || (onServer ? new URL("../v1/", location.href).href : new URL("./", location.href).href);
+const API = params.get("api") || (onServer ? new URL("../v1/", location.href).href : null);
+const ICONS = params.get("icons") || (onServer ? new URL("../icons/", location.href).href : new URL("./icons/", location.href).href);
+const toThree = p => new THREE.Vector3(p[0], p[1], -p[2]);   // Unity (left-handed) -> three.js
+const getJSON = async u => { const r = await fetch(u); if (!r.ok) throw new Error(u + " " + r.status); return r.json(); };
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, 1, 1, 5000);
+const camera = new THREE.PerspectiveCamera(75, 1, 0.5, 5000);
 let yaw = 0, pitch = 0;
 function resize() { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
 addEventListener("resize", resize); resize();
 
-const groups = {}; const nodeIndex = new Map(); const pickables = [];
-const labelLayer = document.createElement("div"); document.body.appendChild(labelLayer);
-const labels = [];
-
-function sprite() {
+// ---- materials ------------------------------------------------------------------------------
+function dotTexture() {
   const c = document.createElement("canvas"); c.width = c.height = 64;
   const g = c.getContext("2d"); const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
   grd.addColorStop(0, "rgba(255,255,255,1)"); grd.addColorStop(.35, "rgba(255,255,255,.9)"); grd.addColorStop(1, "rgba(255,255,255,0)");
   g.fillStyle = grd; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c);
 }
-const tex = sprite();
 const pointMat = new THREE.ShaderMaterial({
-  uniforms: { map: { value: tex }, scale: { value: 1 } }, transparent: true, depthWrite: false,
-  vertexShader: `attribute float size; attribute vec3 color; varying vec3 vColor;
-    uniform float scale; void main(){ vColor = color; vec4 mv = modelViewMatrix * vec4(position,1.0);
-    gl_PointSize = size * scale; gl_Position = projectionMatrix * mv; }`,
+  uniforms: { map: { value: dotTexture() }, scale: { value: 1 } }, transparent: true, depthWrite: false,
+  vertexShader: `attribute float size; attribute vec3 color; varying vec3 vColor; uniform float scale;
+    void main(){ vColor = color; gl_PointSize = size * scale; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
   fragmentShader: `uniform sampler2D map; varying vec3 vColor; void main(){ vec4 t = texture2D(map, gl_PointCoord);
     if (t.a < .05) discard; gl_FragColor = vec4(vColor, t.a); }`,
 });
+let atlas = null, iconMat = null;
+async function loadIcons() {
+  try {
+    const idx = await getJSON(ICONS + "index.json"); const a = idx.atlases[0];
+    const t = await new THREE.TextureLoader().loadAsync(new URL(a.file.replace(/^icons\//, ""), ICONS).href);
+    atlas = { ...a, colors: idx.brand_colors };
+    iconMat = new THREE.ShaderMaterial({
+      uniforms: { map: { value: t }, scale: { value: 1 }, cell: { value: new THREE.Vector2(a.cell / a.width, a.cell / a.height) } },
+      transparent: true, depthWrite: false,
+      vertexShader: `attribute float size; attribute vec3 color; attribute vec2 uvo; varying vec3 vColor; varying vec2 vUv; uniform float scale;
+        void main(){ vColor = color; vUv = uvo; gl_PointSize = size * scale; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+      fragmentShader: `uniform sampler2D map; uniform vec2 cell; varying vec3 vColor; varying vec2 vUv;
+        void main(){ vec2 uv = vec2(vUv.x + gl_PointCoord.x * cell.x, vUv.y - gl_PointCoord.y * cell.y);
+          vec4 t = texture2D(map, uv); if (t.a < .1) discard; gl_FragColor = vec4(vColor, t.a); }`,
+    });
+  } catch (e) { console.warn("icons unavailable", e); }
+}
+function iconUV(n) {
+  if (!atlas) return null;
+  const key = (n.icon && atlas.cells["brand:" + n.icon]) ? "brand:" + n.icon : (n.glyph && atlas.cells["glyph:" + n.glyph]) ? "glyph:" + n.glyph : null;
+  if (!key) return null; const [x, y] = atlas.cells[key];
+  return [x / atlas.width, 1 - y / atlas.height];
+}
 
 function arc(a, b, n = 24) {
   const A = toThree(a), B = toThree(b), ra = A.length(), rb = B.length();
@@ -87,122 +109,240 @@ function arc(a, b, n = 24) {
   const ang = ua.angleTo(ub), bulge = 0.08 * ang / Math.PI * Math.min(ra, rb), pts = [];
   for (let i = 0; i <= n; i++) {
     const t = i / n; let d;
-    if (ang < 1e-4) d = ua.clone(); else {
-      const s = Math.sin(ang); d = ua.clone().multiplyScalar(Math.sin((1 - t) * ang) / s).add(ub.clone().multiplyScalar(Math.sin(t * ang) / s));
-    }
+    if (ang < 1e-4) d = ua.clone(); else { const s = Math.sin(ang); d = ua.clone().multiplyScalar(Math.sin((1 - t) * ang) / s).add(ub.clone().multiplyScalar(Math.sin(t * ang) / s)); }
     pts.push(d.multiplyScalar(ra + (rb - ra) * t - bulge * Math.sin(Math.PI * t)));
   }
   return pts;
 }
+function lines(edges, color, opacity, segs = 12) {
+  const verts = [];
+  for (const [a, b] of edges) { const p = arc(a, b, segs); for (let i = 0; i < p.length - 1; i++) verts.push(p[i].x, p[i].y, p[i].z, p[i+1].x, p[i+1].y, p[i+1].z); }
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+  return new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color, transparent: true, opacity }));
+}
+const labelLayer = document.createElement("div"); document.body.appendChild(labelLayer);
+function makeLabel(text, color, cls, v, owner) { const el = document.createElement("div"); el.className = "lbl " + cls; el.textContent = text; el.style.color = color || "#fff"; labelLayer.appendChild(el); return { el, v, owner }; }
+
+// ---- scenes: the global map and site graphs ---------------------------------------------------
+const world = { root: new THREE.Group(), groups: {}, labels: [], pickables: [] };
+const site = { root: new THREE.Group(), labels: [], pickables: [], doc: null };
+scene.add(world.root); scene.add(site.root);
 const EDGE_COLORS = { transit: 0xffb300, peer: 0x4dd0e1, hosted_by: 0x7986cb, owns: 0xffffff, operates: 0xba68c8, member: 0x90a4ae, aggregate: 0x9e9e9e };
 
-function addLevel(level, doc) {
-  const g = groups[level] || (groups[level] = { pts: new THREE.Group(), edges: new THREE.Group() });
-  scene.add(g.pts); scene.add(g.edges);
-  const pos = [], col = [], size = [];
-  for (const n of doc.nodes) {
-    nodeIndex.set(n.id, n); const v = toThree(n.pos); pos.push(v.x, v.y, v.z);
-    const c = new THREE.Color(n.color || "#90a4ae"); col.push(c.r, c.g, c.b);
-    size.push((n.kind === "realm" || n.kind === "region" ? 14 : n.kind === "category" ? 10 : 3) + 9 * (n.size || .2));
-    if (n.kind === "realm" || n.kind === "category" || n.kind === "region") {
-      const el = document.createElement("div"); el.className = "lbl " + (n.kind === "category" ? "cat" : n.kind);
-      el.textContent = n.label; el.style.color = n.color || "#fff"; labelLayer.appendChild(el); labels.push({ el, v, level });
-    }
+function pointsFor(nodes, sizeFn, useIcons) {
+  const out = new THREE.Group(); const plain = [], iconic = [];
+  for (const n of nodes) (useIcons && iconMat && iconUV(n) ? iconic : plain).push(n);
+  for (const [list, mat] of [[plain, pointMat], [iconic, iconMat]]) {
+    if (!list.length) continue;
+    const pos = [], col = [], size = [], uvo = [];
+    for (const n of list) { const v = toThree(n.pos); pos.push(v.x, v.y, v.z); const c = new THREE.Color(n.color || "#90a4ae"); col.push(c.r, c.g, c.b); size.push(sizeFn(n) * (mat === iconMat ? 1.6 : 1)); if (mat === iconMat) uvo.push(...iconUV(n)); }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    geo.setAttribute("size", new THREE.Float32BufferAttribute(size, 1)); if (mat === iconMat) geo.setAttribute("uvo", new THREE.Float32BufferAttribute(uvo, 2));
+    const pts = new THREE.Points(geo, mat); pts.userData.nodes = list; out.add(pts);
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
-  geo.setAttribute("size", new THREE.Float32BufferAttribute(size, 1));
-  const pts = new THREE.Points(geo, pointMat); pts.userData.nodes = doc.nodes; g.pts.add(pts); pickables.push(pts);
-  const byKind = {};
-  for (const e of doc.edges) (byKind[e.kind] ||= []).push(e);
-  for (const [kind, es] of Object.entries(byKind)) {
-    const verts = [];
-    for (const e of es) { const p = arc(e.a, e.b, kind === "aggregate" ? 32 : 12); for (let i = 0; i < p.length - 1; i++) verts.push(p[i].x, p[i].y, p[i].z, p[i+1].x, p[i+1].y, p[i+1].z); }
-    const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
-    const op = kind === "aggregate" ? .35 : kind === "peer" ? .05 : kind === "transit" ? .08 : .12;
-    g.edges.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: EDGE_COLORS[kind] || 0x888888, transparent: true, opacity: op })));
-  }
-  applyToggles();
+  return out;
 }
 
-let manifest, snapshotBase;
-async function load() {
-  const latest = await (await fetch(BASE + "snapshots/latest.json")).json();
-  snapshotBase = BASE + "snapshots/" + latest.snapshot_id + "/";
-  manifest = await (await fetch(BASE + "snapshots/" + latest.manifest)).json();
-  document.getElementById("sid").textContent = `${manifest.snapshot_id} · ${manifest.stats.nodes.toLocaleString()} nodes · ${manifest.stats.edges.toLocaleString()} edges`;
+function addLevel(level, doc) {
+  const g = world.groups[level] || (world.groups[level] = { pts: new THREE.Group(), edges: new THREE.Group() });
+  world.root.add(g.pts); world.root.add(g.edges);
+  const sz = n => (n.kind === "realm" || n.kind === "region" ? 14 : n.kind === "category" ? 10 : 3) + 9 * (n.size || .2);
+  const pts = pointsFor(doc.nodes, sz, level <= 1); g.pts.add(pts); pts.children.forEach(p => world.pickables.push(p));
+  for (const n of doc.nodes) { nodeIndex.set(n.id, n); if (n.kind === "realm" || n.kind === "category" || n.kind === "region") world.labels.push({ ...makeLabel(n.label, n.color, n.kind === "category" ? "l1" : "l0", toThree(n.pos)), level }); }
+  const byKind = {}; for (const e of doc.edges) (byKind[e.kind] ||= []).push([e.a, e.b]);
+  for (const [k, es] of Object.entries(byKind)) g.edges.add(lines(es, EDGE_COLORS[k] || 0x888888, k === "aggregate" ? .35 : k === "peer" ? .06 : k === "transit" ? .08 : .12, k === "aggregate" ? 32 : 12));
+  applyToggles();
+}
+const nodeIndex = new Map();
+let manifest, snapBase, sitesIndex = [];
+async function loadGlobal() {
+  const latest = await getJSON(DATA + "snapshots/latest.json");
+  snapBase = DATA + "snapshots/" + latest.snapshot_id + "/";
+  manifest = await getJSON(DATA + "snapshots/" + latest.manifest);
+  document.getElementById("sid").textContent = `${manifest.snapshot_id} · ${manifest.stats.nodes.toLocaleString()} nodes${API ? "" : " · static mode"}`;
   document.getElementById("credits").textContent = "Data: " + manifest.attribution;
-  for (const lm of manifest.lods.filter(l => l.file)) addLevel(lm.level, await (await fetch(snapshotBase + lm.file)).json());
+  if (manifest.files.sites) sitesIndex = (await getJSON(snapBase + manifest.files.sites)).sites;
+  for (const lm of manifest.lods.filter(l => l.file)) addLevel(lm.level, await getJSON(snapBase + lm.file));
 }
 let lod3Loaded = false;
 async function loadLod3() {
   if (lod3Loaded) return; lod3Loaded = true;
   const lm = manifest.lods.find(l => l.tiling);
-  await Promise.all(lm.tiles.map(async t => addLevel(3, await (await fetch(snapshotBase + lm.tiling.path.replace("{order}", lm.tiling.order).replace("{ipix}", t.ipix))).json())));
+  await Promise.all(lm.tiles.map(async t => addLevel(3, await getJSON(snapBase + lm.tiling.path.replace("{order}", lm.tiling.order).replace("{ipix}", t.ipix)))));
 }
 function applyToggles() {
   const showEdges = document.getElementById("edges").checked;
-  document.querySelectorAll("[data-lod]").forEach(cb => {
-    const g = groups[cb.dataset.lod]; if (!g) return; g.pts.visible = cb.checked; g.edges.visible = cb.checked && showEdges;
-  });
+  document.querySelectorAll("[data-lod]").forEach(cb => { const g = world.groups[cb.dataset.lod]; if (!g) return; g.pts.visible = cb.checked; g.edges.visible = cb.checked && showEdges; });
+  if (site.edges) site.edges.visible = showEdges;
 }
 document.querySelectorAll("[data-lod]").forEach(cb => cb.addEventListener("change", () => { if (cb.dataset.lod === "3" && cb.checked) loadLod3(); applyToggles(); }));
 document.getElementById("edges").addEventListener("change", applyToggles);
 
-// look-around controls: the viewer stays at the origin (home network)
-let drag = null;
-renderer.domElement.addEventListener("pointerdown", e => drag = { x: e.clientX, y: e.clientY, yaw, pitch, moved: false });
-addEventListener("pointerup", e => { if (drag && !drag.moved) pick(e); drag = null; });
-addEventListener("pointermove", e => {
-  if (drag) { const k = camera.fov / innerHeight * Math.PI / 180; yaw = drag.yaw + (e.clientX - drag.x) * k; pitch = Math.max(-1.55, Math.min(1.55, drag.pitch + (e.clientY - drag.y) * k));
-    if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 4) drag.moved = true; }
-});
-renderer.domElement.addEventListener("wheel", e => { camera.fov = Math.max(8, Math.min(100, camera.fov * (1 + e.deltaY * 0.001))); camera.updateProjectionMatrix(); }, { passive: true });
+async function enterSite(siteId, focusId) {
+  const meta = sitesIndex.find(s => s.id === siteId); if (!meta) return;
+  const doc = await getJSON(snapBase + meta.file); site.doc = doc;
+  site.root.clear(); site.labels.forEach(l => l.el.remove()); site.labels = []; site.pickables = [];
+  const sz = n => n.depth === 0 ? 18 : 4 + 14 * n.size * (n.depth <= 2 ? 1.3 : 1);
+  const pts = pointsFor(doc.nodes, sz, true); site.root.add(pts); pts.children.forEach(p => site.pickables.push(p));
+  const byId = new Map(doc.nodes.map(n => [n.id, n]));
+  const tree = doc.nodes.filter(n => n.parent).map(n => [byId.get(n.parent).pos, n.pos]);
+  site.edges = new THREE.Group(); site.edges.add(lines(tree, 0x8fa3bf, .14, 10));
+  if (doc.edges.length) site.edges.add(lines(doc.edges.map(e => [e.a, e.b]), 0xffd54f, doc.edges.length > 200 ? .05 : .3, 16));
+  site.root.add(site.edges);
+  const labelDepth = doc.nodes.filter(n => n.depth === 2).length <= 80 ? 2 : 1;
+  for (const n of doc.nodes) if (n.depth >= 1 && n.depth <= labelDepth) site.labels.push(makeLabel(n.label, n.color, n.depth === 1 ? "l0" : "l2", toThree(n.pos)));
+  world.root.visible = false; site.root.visible = true; if (routeGroup) routeGroup.visible = false;
+  world.labels.forEach(l => l.el.style.display = "none");
+  document.getElementById("title").textContent = doc.label; document.getElementById("back").hidden = false;
+  document.getElementById("globalControls").style.display = "none";
+  info(`${doc.label}: ${doc.nodes.length} endpoints, depth ${doc.max_depth}. You are standing at its centre.`);
+  if (focusId && byId.get(focusId)) lookAt(byId.get(focusId).pos);
+  applyToggles();
+}
+function exitSite() {
+  site.root.visible = false; site.labels.forEach(l => l.el.remove()); site.labels = []; site.doc = null;
+  world.root.visible = true; if (routeGroup) routeGroup.visible = true;
+  document.getElementById("title").textContent = "The Internet Snapshot"; document.getElementById("back").hidden = true;
+  document.getElementById("globalControls").style.display = "";
+}
+document.getElementById("back").addEventListener("click", exitSite);
+document.getElementById("codeUniverse").addEventListener("click", () => enterSite("site:code-universe"));
 
-const ray = new THREE.Raycaster(); ray.params.Points.threshold = 6;
+// ---- interaction ----------------------------------------------------------------------------
+let drag = null, selected = null;
+renderer.domElement.addEventListener("pointerdown", e => drag = { x: e.clientX, y: e.clientY, yaw, pitch, moved: false });
+addEventListener("pointerup", e => { if (drag && !drag.moved && e.target === renderer.domElement) pick(e); drag = null; });
+addEventListener("pointermove", e => {
+  if (!drag) return; const k = camera.fov / innerHeight * Math.PI / 180;
+  yaw = drag.yaw + (e.clientX - drag.x) * k; pitch = Math.max(-1.55, Math.min(1.55, drag.pitch + (e.clientY - drag.y) * k));
+  if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 4) drag.moved = true;
+});
+renderer.domElement.addEventListener("wheel", e => { camera.fov = Math.max(6, Math.min(100, camera.fov * (1 + e.deltaY * 0.001))); camera.updateProjectionMatrix(); }, { passive: true });
+function lookAt(p) { const v = toThree(p).normalize(); yaw = Math.atan2(v.x, -v.z); pitch = Math.asin(v.y); }
+const info = t => document.getElementById("info").textContent = t;
+const ray = new THREE.Raycaster();
 function pick(e) {
   const m = new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -e.clientY / innerHeight * 2 + 1);
   ray.setFromCamera(m, camera); ray.params.Points.threshold = 6 * camera.fov / 75;
-  const hits = ray.intersectObjects(pickables.filter(p => p.parent.visible), false);
-  if (!hits.length) return;
-  const n = hits[0].object.userData.nodes[hits[0].index];
-  document.getElementById("info").textContent = `${n.label}\n${n.kind}${n.role ? " · " + n.role : ""}${n.category ? " · " + n.category : ""}${n.asn ? " · AS" + n.asn : ""}${n.domain ? " · " + n.domain : ""}`;
-  document.getElementById("to").value = n.domain || n.id;
+  const pool = site.doc ? site.pickables : world.pickables.filter(p => p.parent.parent.visible);
+  const hits = ray.intersectObjects(pool, false); if (!hits.length) return;
+  const n = hits[0].object.userData.nodes[hits[0].index]; selected = n;
+  const portal = n.portal || (n.meta && n.meta.portal);
+  document.getElementById("enter").hidden = !portal;
+  const extra = site.doc ? `${n.method ? n.method + " " : ""}${n.host || ""}${n.path || ""}${n.meta && n.meta.stars ? " · ★" + n.meta.stars.toLocaleString() : ""}`
+                         : `${n.role ? n.role : n.category || ""}${n.asn ? " · AS" + n.asn : ""}${n.domain ? " · " + n.domain : ""}`;
+  info(`${n.label}\n${n.kind} · ${extra}${n.url ? "\n" + n.url : ""}${portal ? "\n▶ has a site graph: " + portal : ""}`);
+  if (!site.doc) document.getElementById("to").value = n.domain || n.id;
 }
+document.getElementById("enter").addEventListener("click", () => { const p = selected && (selected.portal || (selected.meta && selected.meta.portal)); if (p) enterSite(p); });
 
+// ---- locate a URL (client-side, per snapshot-format.md §13) ---------------------------------------
+document.getElementById("locateBtn").addEventListener("click", async () => {
+  const url = prompt("URL to locate", "https://api.github.com/repos/octocat/hello-world/issues"); if (!url) return;
+  let r;
+  if (API) r = await getJSON(API + "locate?url=" + encodeURIComponent(url));
+  else {
+    const domains = await getJSON(snapBase + manifest.files.domains); const host = new URL(url).hostname;
+    const labels = host.split("."); let nid = null;
+    for (let i = 0; i < labels.length - 1 && !nid; i++) nid = domains[labels.slice(i).join(".")];
+    const node = nid && nodeIndex.get(nid); const sid = node && (node.portal || (nodeIndex.get(node.org) || {}).portal);
+    r = { global: node ? { node: node.id } : null, site: sid ? { id: sid, node: null } : null, match: node ? "domain" : "none" };
+  }
+  if (r.site) { await enterSite(r.site.id, r.site.node); info(`${url}\n→ ${r.site.node || r.site.id} (${r.match})${r.operation ? "\n" + r.operation.label : ""}`); }
+  else if (r.global) { lookAt(nodeIndex.get(r.global.node).pos); info(`${url}\n→ ${r.global.node} (${r.match})`); }
+  else info(`${url}: not in this snapshot`);
+});
+
+// ---- routing: server, or client-side valley-free over asgraph.json (snapshot-format.md §10.2) ------
+let asg = null;
+async function asgraph() {
+  if (asg) return asg; const d = await getJSON(snapBase + manifest.files.asgraph);
+  const prov = new Map(), cust = new Map(), peer = new Map(), add = (m, k, v) => (m.get(k) || m.set(k, []).get(k)).push(v);
+  for (const [a, b, r] of d.rels) { if (r === -1) { add(cust, a, b); add(prov, b, a); } else { add(peer, a, b); add(peer, b, a); } }
+  for (const m of [prov, cust, peer]) for (const v of m.values()) v.sort((x, y) => x - y);
+  return asg = { ...d, prov, cust, peer };
+}
+function routesTo(g, dst) {
+  const best = new Map([[dst, [0, 0, null]]]); let frontier = [dst];
+  while (frontier.length) { const nxt = []; for (const x of frontier.sort((a, b) => a - b)) for (const p of g.prov.get(x) || []) if (!best.has(p)) { best.set(p, [1, best.get(x)[1] + 1, x]); nxt.push(p); } frontier = nxt; }
+  const cand = new Map();
+  for (const [x, [t, l]] of best) if (t <= 1) for (const q of g.peer.get(x) || []) if (!best.has(q)) { const c = cand.get(q); if (!c || l + 1 < c[1] || (l + 1 === c[1] && x < c[2])) cand.set(q, [2, l + 1, x]); }
+  for (const [k, v] of cand) best.set(k, v);
+  const buckets = []; for (const [a, v] of best) (buckets[v[1]] ||= []).push(a);
+  for (let l = 0; l < buckets.length; l++) for (const a of (buckets[l] || []).sort((x, y) => x - y)) {
+    if (best.get(a)[1] !== l) continue;
+    for (const c of g.cust.get(a) || []) { const cur = best.get(c); if (!cur || (cur[0] === 3 && (l + 1 < cur[1] || (l + 1 === cur[1] && a < cur[2])))) { best.set(c, [3, l + 1, a]); (buckets[l + 1] ||= []).push(c); } }
+  }
+  return best;
+}
+async function ipToAsn(ip) {
+  const parts = ip.split(".").map(Number); if (parts.length !== 4) return null;
+  const x = ((parts[0] << 24) >>> 0) + (parts[1] << 16) + (parts[2] << 8) + parts[3];
+  try { const { ranges } = await getJSON(new URL("ip2asn/v4/" + parts[0] + ".json", DATA).href);
+    let lo = 0, hi = ranges.length - 1, ans = -1; while (lo <= hi) { const mid = (lo + hi) >> 1; if (ranges[mid][0] <= x) { ans = mid; lo = mid + 1; } else hi = mid - 1; }
+    return ans >= 0 && x <= ranges[ans][1] ? ranges[ans][2] : null; } catch { return null; }
+}
+async function clientRoute(to, homeAsn) {
+  const g = await asgraph(); const domains = await getJSON(snapBase + manifest.files.domains);
+  const host = to.replace(/^https?:\/\//, "").split("/")[0]; const labels = host.split("."); let nid = nodeIndex.has(to) ? to : null;
+  for (let i = 0; i < labels.length - 1 && !nid; i++) nid = domains[labels.slice(i).join(".")];
+  const dest = nid && nodeIndex.get(nid); if (!dest) throw new Error("no node matches " + to);
+  const dsts = (g.hosting[dest.id] || g.org_networks[dest.org] || g.org_networks[dest.id] || []).map(s => +s.split(":")[1]);
+  let best = null;
+  for (const d of dsts) {
+    const rt = routesTo(g, d); if (!rt.has(homeAsn)) continue;
+    const path = [homeAsn]; let cur = homeAsn, guard = 0; while (cur !== d && guard++ < 64) { cur = rt.get(cur)[2]; path.push(cur); }
+    if (!best || path.length < best.length) best = path;
+  }
+  let method = "valley-free (client)";
+  if (!best) { best = [homeAsn, ...(g.tier1.slice(0, 1)), ...(dsts.slice(0, 1))]; method = "fallback (client)"; }
+  const rel = (a, b) => (g.prov.get(a) || []).includes(b) ? "up" : (g.peer.get(a) || []).includes(b) ? "peer" : (g.cust.get(a) || []).includes(b) ? "down" : "up";
+  const hops = [{ node: "home", label: "Home network", pos: [0, 0, 0], rel: null }];
+  best.forEach((a, i) => { const n = g.nodes[String(a)]; hops.push({ node: "as:" + a, label: n ? n.label : "AS" + a, pos: n ? n.pos : null, rel: i ? rel(best[i - 1], a) : "origin" }); });
+  hops.push({ node: dest.id, label: dest.label, pos: dest.pos, rel: "served" });
+  return { method, confidence: "low", hops };
+}
 let routeGroup = null;
 document.getElementById("go").addEventListener("click", async () => {
   const to = document.getElementById("to").value.trim(); if (!to) return;
-  const asn = document.getElementById("asn").value.trim();
-  const r = await fetch(BASE + "route?to=" + encodeURIComponent(to) + (asn ? "&asn=" + encodeURIComponent(asn) : ""));
-  const d = await r.json(); const info = document.getElementById("info");
-  if (!r.ok) { info.textContent = d.detail || "route failed"; return; }
+  const home = document.getElementById("home").value.trim();
+  let d;
+  try {
+    if (API) {
+      const q = /^\d+$/.test(home) ? "&asn=" + home : home ? "&ip=" + encodeURIComponent(home) : "";
+      const r = await fetch(API + "route?to=" + encodeURIComponent(to) + q); d = await r.json(); if (!r.ok) throw new Error(d.detail || "route failed");
+    } else {
+      const asn = /^\d+$/.test(home) ? +home : home ? await ipToAsn(home) : null;
+      if (!asn) throw new Error("static mode: enter your home ASN or public IPv4");
+      d = await clientRoute(to, asn);
+    }
+  } catch (e) { info(String(e.message || e)); return; }
+  if (site.doc) exitSite();
   if (routeGroup) scene.remove(routeGroup); routeGroup = new THREE.Group(); scene.add(routeGroup);
   const RC = { up: 0xffb300, peer: 0x4dd0e1, down: 0x81c784, served: 0xffffff, origin: 0xffffff, sibling: 0xba68c8 };
-  for (let i = 1; i < d.hops.length; i++) {
-    const a = d.hops[i - 1].pos, b = d.hops[i].pos; if (!a || !b) continue;
-    const g = new THREE.BufferGeometry().setFromPoints(arc(a, b, 48));
-    routeGroup.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: RC[d.hops[i].rel] || 0xffffff })));
-  }
-  info.textContent = `${d.method} · confidence ${d.confidence}\n` + d.hops.map(h => `${h.label}${h.rel && h.rel !== "origin" ? " (" + h.rel + ")" : ""}`).join(" → ");
+  for (let i = 1; i < d.hops.length; i++) { const a = d.hops[i - 1].pos, b = d.hops[i].pos; if (!a || !b) continue;
+    routeGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(arc(a, b, 48)), new THREE.LineBasicMaterial({ color: RC[d.hops[i].rel] || 0xffffff }))); }
+  info(`${d.method} · confidence ${d.confidence}\n` + d.hops.map(h => `${h.label}${h.rel && h.rel !== "origin" ? " (" + h.rel + ")" : ""}`).join(" → "));
 });
 
+// ---- frame loop -----------------------------------------------------------------------------
 function frame() {
   camera.position.set(0, 0, 0);
   camera.lookAt(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
-  pointMat.uniforms.scale.value = 75 / camera.fov;
+  pointMat.uniforms.scale.value = 75 / camera.fov; if (iconMat) iconMat.uniforms.scale.value = 75 / camera.fov;
   renderer.render(scene, camera);
   const showLabels = document.getElementById("labels").checked;
-  for (const l of labels) {
-    const g = groups[l.level]; const vis = showLabels && g && g.pts.visible;
+  const active = site.doc ? site.labels : world.labels;
+  for (const l of active) {
+    const g = !site.doc ? world.groups[l.level] : null; const vis = showLabels && (site.doc || (g && g.pts.visible));
     const p = l.v.clone().project(camera);
     if (!vis || p.z > 1 || Math.abs(p.x) > 1.1 || Math.abs(p.y) > 1.1) { l.el.style.display = "none"; continue; }
     l.el.style.display = ""; l.el.style.left = ((p.x + 1) / 2 * innerWidth) + "px"; l.el.style.top = ((1 - p.y) / 2 * innerHeight) + "px";
   }
   requestAnimationFrame(frame);
 }
-load().catch(e => document.getElementById("sid").textContent = "failed to load: " + e);
+(async () => { await loadIcons(); try { await loadGlobal(); const s = params.get("site"); if (s) enterSite(s); } catch (e) { document.getElementById("sid").textContent = "failed to load: " + e; } })();
 frame();
 </script>
 </body>

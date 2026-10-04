@@ -9,13 +9,22 @@ All coordinates in the snapshot are already in **Unity conventions**: left-hande
 
 ## 1. Loading sequence
 
-**Public base URL**, a static mirror with no server needed for display:
+**Public base URL:** GitHub Pages, with no server needed:
 
 ```
-https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public
+https://primitive-io.github.io/the-internet-snapshot
 ```
 
-You can also use the CDN mirror `https://cdn.jsdelivr.net/gh/PRIMITIVE-IO/the-internet-snapshot@main/public`. Routes, `whereami`, search, node details and the overlay proxy need the API server (`/v1`; see the README to run it).
+Mirror: `https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public`. It has the snapshots only, without icons or ip2asn.
+
+Everything works statically (`snapshot-format.md` §10):
+- client-side routing over `asgraph.json`;
+- home AS from the `ip2asn` shards;
+- locate through `domains.json` and the site graphs;
+- overlays built client-side.
+
+The API server (`/v1`) is optional.
+
 
 The reference web viewer (`viewer/index.html`, served at `/viewer/`) is a working example of this guide. The only difference is that it maps Unity's left-handed coordinates to three.js with `(x, y, -z)`. Unity needs no conversion.
 
@@ -128,6 +137,41 @@ Overlay node ids start with `ov:`. They never collide with snapshot ids.
 - **Select a service:** draw its `hosted_by` edges to the edge shell and the route from home (`/v1/route`).
 - **Search:** use `search.json`, or `GET /v1/search?q=`. To map a hostname the user visits, for example a page in a Primitive browser panel, to its node, use `domains.json`. It covers aliases such as `mail.google.com` → `svc:gmail.com`.
 
-## 7. Attribution
+## 7. Site graphs ("entering" a site)
+
+1. Global nodes with a non-null `portal` can be entered. Examples: Google, GitHub, Microsoft, Amazon, Wikipedia, about 350 sites in all.
+2. To enter a site, load `snapshots/<id>/` + the `file` from `sites/index.json`.
+3. Its coordinates use the same conventions, with the **site at the origin**:
+   - **Immersive:** hide the global map, put the camera at the origin, and show the site graph as the new skybox. Depth *d* is on shell `shells[d]`.
+   - **Miniature:** parent the site graph under the global node's position and scale it by `≈ 30 / radius`. It then looks like a small galaxy attached to the node.
+4. Draw parent→child links as arcs (`snapshot-format.md` §6) at low alpha. Explicit `edges` (`same_resource`, `maintains`) are cross-links. Draw them dimmer when there are many.
+5. Labels: depth 1 always, depth 2 when there are fewer than about 80 depth-2 nodes, and deeper on gaze or hover.
+6. Some site nodes have a `portal` of their own, such as GitHub → *Open-source universe* → `site:code-universe`. Let the user follow it.
+
+## 8. Icons
+
+- Load `icons/index.json` and `icons/atlas-64.png` from the Pages base (`snapshot-format.md` §12).
+- Every node can have:
+  - `icon`: a brand, which is preferred when present;
+  - `glyph`: a function, for example `mail`, `git-pull-request` or `credit-card`.
+- Render nodes as instanced quads that sample the atlas cell for their icon or glyph, tinted by the node `color`.
+- The PNG is white on transparent, and its cell UVs are given in the index.
+- The reference viewer does this with a point-sprite shader. See `viewer/index.html`, `iconMat`.
+
+## 9. Agents and swarms
+
+The user's agents produce events: HTTP calls, page visits and tool calls.
+
+- Turn each event into a position with `locate(url)`. Locally, use `domains.json` plus the site graph's host/path rules. Otherwise use `/v1/locate` or the MCP server.
+- Or batch them through `POST /v1/activity`. The result follows `snapshot-format.md` §14.
+- Suggested rendering:
+  - one avatar per agent, in its deterministic colour, at `at` (global) or `at_site` (inside an entered site);
+  - a fading trail through recent `trail` steps;
+  - per-node `heat` as a glow or bar on the node;
+  - for a new service, the network route from home (`/v1/route` or client-side routing) drawn in the agent's colour.
+
+Agents themselves can use the MCP server (`python -m internet_snapshot mcp`, configured by `agent.json` on Pages). They can then reason about the same map that the user sees.
+
+## 10. Attribution
 
 Show `manifest.attribution` in a credits panel. Some sources are CC BY and require attribution.

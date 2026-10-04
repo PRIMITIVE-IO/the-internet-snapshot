@@ -14,12 +14,14 @@ from dataclasses import dataclass, field
 
 from ..config import EDGE_ROLES
 from ..geo import country_from_domain, region_for_country
+from ..glyphs import CATEGORY_GLYPH, KIND_GLYPH, REALM_GLYPH, ROLE_GLYPH
 from ..seed import Seed
 from ..sources import SOURCES
 from ..sources import parsers as P
 
 NODE_KEYS = ("id", "kind", "label", "lod", "parent", "realm", "category", "org", "region", "role", "shell",
-             "r", "az", "el", "pos", "size", "color", "rank", "domain", "asn", "country", "icon", "url")
+             "r", "az", "el", "pos", "size", "color", "rank", "domain", "asn", "country", "icon", "url",
+             "glyph", "portal")
 
 
 def new_node(id: str, kind: str, label: str, **kw) -> dict:
@@ -420,6 +422,15 @@ def build_catalog(seed: Seed, opts: BuildOptions) -> Catalog:
         if n["kind"] in ("network", "ixp"):
             n["color"] = role_colors.get(n["role"], "#90A4AE")
 
+    # ---- glyphs: what each node is ----
+    for n in cat.nodes.values():
+        if n["kind"] == "realm":
+            n["glyph"] = REALM_GLYPH.get(n["id"].split(":", 1)[1], "orbit")
+        elif n["kind"] in ("category", "service", "org"):
+            n["glyph"] = CATEGORY_GLYPH.get((n["category"] or ":").split(":", 1)[1], "circle")
+        elif n["kind"] in ("network", "ixp", "region"):
+            n["glyph"] = ROLE_GLYPH.get(n["role"], KIND_GLYPH.get(n["kind"], "circle"))
+
     # ---- sizes ----
     for s in services:
         pop = popularity(s["rank"])
@@ -449,7 +460,7 @@ def heuristic_relationships(role_of: dict[int, str], country_of: dict[int, str |
     - Transit, hosting and long-tail networks buy transit from two tier-1s in their region,
       or from a seed access/transit network in their country.
     - Access networks buy transit from regional tier-1s and peer with the big content/CDN/cloud
-      networks, which also peer with every tier-1. This mirrors how most traffic to large
+      networks. Those also peer with every tier-1 and with each other. This mirrors how most traffic to large
       services leaves an eyeball network over direct peering.
     """
     seed_asns = set(role_of) if seed_asns is None else seed_asns
@@ -459,6 +470,10 @@ def heuristic_relationships(role_of: dict[int, str], country_of: dict[int, str |
         for b in tier1[i + 1:]:
             rels.add((a, b, 0))
     big_content = sorted(a for a, r in role_of.items() if r in ("content", "cdn", "cloud") and a in seed_asns)
+    # the large content, CDN and cloud networks also peer with each other (PNIs and IXPs)
+    for i, a in enumerate(big_content):
+        for b in big_content[i + 1:]:
+            rels.add((a, b, 0))
     national_upstreams: dict[str, list[int]] = defaultdict(list)
     for a, r in sorted(role_of.items()):
         if r in ("transit", "access") and country_of.get(a) and a in seed_asns:

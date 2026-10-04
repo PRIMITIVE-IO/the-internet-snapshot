@@ -102,7 +102,7 @@ def _dump(obj) -> bytes:
 
 
 def write_snapshot(cat: Catalog, seed_taxonomy: dict, layout_meta: dict, out_root: Path = SNAPSHOTS_DIR,
-                   created_at: dt.datetime | None = None, keep: int = 3) -> str:
+                   created_at: dt.datetime | None = None, keep: int = 3, sites=None) -> str:
     nodes = cat.nodes
     created_at = created_at or dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
     edges = [e for e in cat.edges if e["source"] in nodes and e["target"] in nodes]
@@ -185,6 +185,18 @@ def write_snapshot(cat: Catalog, seed_taxonomy: dict, layout_meta: dict, out_roo
     search = sorted(([n["id"], n["label"], n["domain"], n["lod"]] for n in nodes.values()), key=lambda r: r[0])
     files["search.json"] = _dump(search)
 
+    if sites is not None:
+        from ..sites import site_documents
+        graphs, ctx = sites
+        site_files, site_index = site_documents(graphs, snapshot_placeholder, ctx)
+        files.update(site_files)
+        files["sites/index.json"] = _dump(site_index)
+        known = {s["id"] for s in cat.sources}
+        for s in ctx.sources_used.values():
+            if s["id"] not in known:
+                cat.sources.append({"id": s["id"], "name": s["name"], "url": s["url"], "license": s["license"],
+                                    "license_class": "open", "attribution": s["attribution"]})
+
     # content hash -> snapshot id
     h = hashlib.sha256()
     for name in sorted(files):
@@ -223,7 +235,7 @@ def write_snapshot(cat: Catalog, seed_taxonomy: dict, layout_meta: dict, out_roo
         "categories": taxonomy_cats,
         "network_roles": seed_taxonomy["network_roles"],
         "files": {"anchors": "anchors.json", "asgraph": "asgraph.json", "search": "search.json",
-                  "domains": "domains.json"},
+                  "domains": "domains.json", **({"sites": "sites/index.json"} if sites is not None else {})},
         "stats": {"nodes": len(nodes), "edges": len(edges), **{f"{k}s": v for k, v in sorted(kinds.items())},
                   "relationship_source": cat.relationship_source},
         "sources": cat.sources,

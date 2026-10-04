@@ -443,6 +443,10 @@ The ip2asn shards and the icon atlases are regenerated each build and only deplo
 | IXPs | 23 major IXPs at real metro locations. Membership is heuristic until PeeringDB is enabled. |
 | Layout | Deterministic. The same inputs give the same snapshot id. |
 | Overlays | GitHub and Google connectors implemented and tested against mocked APIs. Live OAuth is the client's responsibility. |
+| **Site graphs (v0.2)** | **Real.** About 350 graphs and about 15k nodes:<br>- Google and GitHub are curated. GitHub has all 1,232 REST operations from GitHub's OpenAPI description. Google has 315 APIs from its Discovery directory and its CrUX hostnames.<br>- Every other multi-service org, and every major service with 6 or more hostnames, gets an automatic graph from CrUX hostnames.<br>- With APIs.guru (fetched in CI), AWS, Microsoft and others gain their API lists. |
+| **Code universe (v0.2)** | **Real.** About 3,400 top repositories, from EvanLi/Github-Ranking daily data, in 22 ecosystem domains plus a maintainer hub.<br>- Purpose clusters are keyword-derived.<br>- Planned: topics from the GitHub Search API, and dependency edges. |
+| **Agents (v0.2)** | `locate`, the activity overlay, an on-demand site graph from URLs, and an MCP server with 10 tools, tested over stdio. `agent.json` and `llms.txt` are on Pages. |
+| **Hosting (v0.2)** | GitHub Pages deployed by Actions (needs the one-time *Settings → Pages → Source: GitHub Actions*). The GHCR image is built by Actions. The Azure Container Apps deploy is wired up and waits for credentials. |
 
 ---
 

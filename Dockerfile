@@ -6,7 +6,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY internet_snapshot internet_snapshot
 COPY seed seed
 COPY viewer viewer
-COPY public public
+COPY public/snapshots public/snapshots
+LABEL org.opencontainers.image.source="https://github.com/PRIMITIVE-IO/the-internet-snapshot" \
+      org.opencontainers.image.description="The Internet Snapshot API server" \
+      org.opencontainers.image.licenses="MIT"
 # Download the PDDL/CC0/CC BY lookup tables at startup so /v1/whereami can map caller IPs to ASNs.
 ENV SNAPSHOT_FETCH_LOOKUPS=1
 EXPOSE 8000

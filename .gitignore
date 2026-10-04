@@ -5,3 +5,10 @@ __pycache__/
 data/raw/
 data/cache/
 *.egg-info/
+public/icons/
+public/ip2asn/
+public/agent.json
+public/llms.txt
+public/index.html
+public/.nojekyll
+build/

@@ -1,12 +1,11 @@
 """Internet Snapshot API server. Implements docs/snapshot-format.md.
 
-Run with ``python -m internet_snapshot serve``.
+Run with ``python -m internet_snapshot serve``. Everything here also works without a server: see
+snapshot-format.md §10 and the MCP server (§15).
 """
 
 from __future__ import annotations
 
-import ipaddress
-import json
 import logging
 import os
 from pathlib import Path
@@ -19,18 +18,17 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from .. import FORMAT_VERSION, __version__
-from ..config import ROOT, SHELLS, SNAPSHOTS_DIR
-from ..geo import geo_dir, placement, region_for_country
+from .. import query as Q
+from ..config import PUBLIC_DIR, ROOT, SNAPSHOTS_DIR
 from ..overlay import CONNECTORS, ProviderAuthError, ProviderError, connector_specs
 from ..overlay.placement import place_overlay
-from ..sources import SOURCES
-from ..sources import parsers as P
+from ..sites.ondemand import graph_from_urls
 from .store import SnapshotStore
 
 log = logging.getLogger("internet_snapshot.server")
 
 app = FastAPI(title="The Internet Snapshot", version=__version__,
-              description="Frozen 3D snapshot of the internet for Primitive environment clients. "
+              description="Frozen 3D snapshot of the internet for Primitive environment clients and AI agents. "
                           "See docs/snapshot-format.md.")
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST", "OPTIONS"],
@@ -38,6 +36,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "P
 
 if (ROOT / "viewer").is_dir():
     app.mount("/viewer", StaticFiles(directory=ROOT / "viewer", html=True), name="viewer")
+if (PUBLIC_DIR / "icons").is_dir():
+    app.mount("/icons", StaticFiles(directory=PUBLIC_DIR / "icons"), name="icons")
 
 
 @app.get("/", include_in_schema=False)
@@ -46,36 +46,7 @@ def index():
 
 
 store = SnapshotStore(Path(os.environ.get("SNAPSHOT_DIR", SNAPSHOTS_DIR)))
-
-
-class _Lookup:
-    """Optional IP->ASN and ASN metadata used by /whereami and /route; loaded lazily if downloaded."""
-
-    def __init__(self):
-        self.loaded = False
-        self.ip_table = None
-        self.asninfo: dict = {}
-        self.countries: dict = {}
-
-    def ensure(self):
-        if self.loaded:
-            return
-        self.loaded = True
-        if os.environ.get("SNAPSHOT_FETCH_LOOKUPS") == "1":
-            for sid in ("originasn", "asninfo", "countries"):
-                try:
-                    SOURCES[sid].fetch()
-                except Exception as e:  # serve without it
-                    log.warning("could not fetch %s: %s", sid, e)
-        if SOURCES["originasn"].available():
-            self.ip_table = P.OriginAsnTable.load(SOURCES["originasn"].path)
-        if SOURCES["asninfo"].available():
-            self.asninfo = P.load_asninfo(SOURCES["asninfo"].path)
-        if SOURCES["countries"].available():
-            self.countries = P.load_countries(SOURCES["countries"].path)
-
-
-lookups = _Lookup()
+lookups = Q.HomeLookup(os.environ.get("SNAPSHOT_BASE_URL"))
 
 
 def _client_ip(request: Request) -> str | None:
@@ -85,37 +56,11 @@ def _client_ip(request: Request) -> str | None:
     return request.client.host if request.client else None
 
 
-def _home(snap, ip: str | None, asn: int | None) -> dict:
-    lookups.ensure()
-    out = {"ip": ip, "asn": asn, "node": None, "label": None, "in_snapshot": False, "pos": None,
-           "country": None, "region": None}
-    if asn is None and ip:
-        try:
-            if ipaddress.ip_address(ip).is_private or ipaddress.ip_address(ip).is_loopback:
-                out["note"] = "private or loopback address; pass ?asn= or ?ip= with a public address"
-        except ValueError:
-            raise HTTPException(400, f"invalid ip {ip!r}")
-        if lookups.ip_table is not None:
-            asn = lookups.ip_table.lookup(ip)
-        out["asn"] = asn
-    if asn is None:
-        return out
-    node = snap.nodes.get(f"as:{asn}")
-    info = lookups.asninfo.get(asn, {})
-    if node:
-        out.update(node=node["id"], label=node["label"], in_snapshot=True, pos=node["pos"],
-                   country=node.get("country"), region=node.get("region"))
-        return out
-    cc = info.get("country")
-    out.update(node=f"as:{asn}", label=info.get("name") or f"AS{asn}", country=cc,
-               region=f"region:{region_for_country(cc)}")
-    if cc and cc in lookups.countries:
-        c = lookups.countries[cc]
-        out["pos"] = placement(geo_dir(c["lat"], c["lon"]), SHELLS["backbone"])["pos"]
-    else:
-        rnode = snap.nodes.get(out["region"])
-        out["pos"] = rnode["pos"] if rnode else [0.0, 0.0, SHELLS["backbone"]]
-    return out
+def _q(fn, *args, **kw):
+    try:
+        return fn(*args, **kw)
+    except Q.QueryError as e:
+        raise HTTPException(e.status, str(e))
 
 
 # ------------------------------------------------------------------------------------------
@@ -136,7 +81,7 @@ def latest():
 
 @app.get("/v1/snapshots/{snapshot_id}/{path:path}")
 def snapshot_file(snapshot_id: str, path: str):
-    root = store.root.resolve()
+    root = Path(store.root).resolve()
     target = (root / snapshot_id / path).resolve()
     if root not in target.parents or not target.is_file() or snapshot_id.startswith("."):
         raise HTTPException(404, "not found")
@@ -149,80 +94,78 @@ def snapshot_file(snapshot_id: str, path: str):
 
 @app.get("/v1/whereami")
 def whereami(request: Request, ip: str | None = None, asn: int | None = None):
-    snap = store.current()
-    return _home(snap, ip or (None if asn else _client_ip(request)), asn)
+    return _q(Q.home, store.current(), lookups, ip or (None if asn else _client_ip(request)), asn)
 
 
 @app.get("/v1/route")
 def route(request: Request, to: str = Query(..., description="node id, domain, hostname or URL"),
           ip: str | None = None, asn: int | None = None):
-    snap = store.current()
-    dest = snap.find_node(to)
-    if dest is None:
-        raise HTTPException(404, f"no node matches {to!r}")
-    home = _home(snap, ip or (None if asn else _client_ip(request)), asn)
-    if home["asn"] is None:
-        raise HTTPException(422, "could not determine the home network; pass ?asn= or ?ip=")
-    g = snap.asgraph
-    if dest["kind"] == "network":
-        dst_nodes = [dest["id"]]
-    elif dest["kind"] == "service":
-        dst_nodes = g.hosting.get(dest["id"]) or g.org_networks.get(dest.get("org") or "", [])
-    elif dest["kind"] == "org":
-        dst_nodes = g.org_networks.get(dest["id"], [])
-    else:
-        raise HTTPException(400, f"cannot route to a {dest['kind']}; pick a service, org or network")
-    dst_asns = [int(n.split(":", 1)[1]) for n in dst_nodes]
-    src = int(home["asn"])
-    region = (home.get("region") or "").removeprefix("region:") or None
-    if dst_asns:
-        r = g.route(src, dst_asns, region)
-    else:
-        r = {"as_path": [src], "method": "fallback", "confidence": "low"}
+    return _q(Q.route, store.current(), lookups, to, ip or (None if asn else _client_ip(request)), asn)
 
-    hops = [{"seq": 0, "node": "home", "kind": "home", "label": "Home network", "pos": [0.0, 0.0, 0.0], "rel": None}]
-    path = r["as_path"]
-    for i, a in enumerate(path):
-        nid = f"as:{a}"
-        n = snap.nodes.get(nid)
-        if n is None and a == src:
-            pos, label = home["pos"], home["label"]
-        elif n is None:
-            pos, label = None, f"AS{a}"
-        else:
-            pos, label = n["pos"], n["label"]
-        rel = "origin" if i == 0 else g.rel(path[i - 1], a)
-        if i > 0 and rel == "sibling" and not g.known(path[i - 1]):
-            rel = "up"  # synthetic attachment of an unknown home AS to its fallback upstream
-        hops.append({"seq": len(hops), "node": nid, "kind": "network", "asn": a, "label": label, "pos": pos, "rel": rel})
-    if dest["kind"] in ("service", "org"):
-        hops.append({"seq": len(hops), "node": dest["id"], "kind": dest["kind"], "label": dest["label"],
-                     "pos": dest["pos"], "rel": "served"})
-    return {
-        "snapshot_id": snap.id,
-        "from": home,
-        "to": {"query": to, "node": dest["id"], "label": dest["label"], "kind": dest["kind"],
-               "network": f"as:{path[-1]}" if dst_asns else None, "pos": dest["pos"]},
-        "method": r["method"], "confidence": r["confidence"], "relationship_source": g.relationship_source,
-        "as_path": path, "hops": hops,
-    }
+
+@app.get("/v1/locate")
+def locate(url: str, method: str | None = None):
+    return store.current().locator.locate(url, method)
 
 
 @app.get("/v1/search")
 def search(q: str, limit: int = Query(20, ge=1, le=200)):
-    snap = store.current()
     return [{"id": n["id"], "label": n["label"], "kind": n["kind"], "domain": n.get("domain"), "lod": n["lod"],
-             "pos": n["pos"]} for n in snap.search(q, limit)]
+             "pos": n["pos"], "portal": n.get("portal")} for n in store.current().search(q, limit)]
 
 
 @app.get("/v1/node/{node_id:path}")
 def node(node_id: str):
+    return _q(Q.describe, store.current(), node_id, 500)
+
+
+@app.get("/v1/sites")
+def sites():
     snap = store.current()
-    n = snap.nodes.get(node_id) or snap.find_node(node_id)
-    if n is None:
-        raise HTTPException(404, f"no node {node_id!r}")
-    return {"node": n, "edges": snap.edges_by_node.get(n["id"], [])[:500],
-            "children": snap.children.get(n["id"], [])}
+    return {"snapshot_id": snap.id, "sites": snap.sites_index}
+
+
+@app.get("/v1/sites/{site_id:path}/summary")
+def site_summary(site_id: str, depth: int = Query(2, ge=1, le=6)):
+    return _q(Q.site_summary, store.current(), site_id, depth)
+
+
+@app.get("/v1/sites/{site_id:path}/endpoints")
+def site_endpoints(site_id: str, q: str | None = None, limit: int = Query(50, ge=1, le=2000)):
+    return _q(Q.list_endpoints, store.current(), site_id, q, limit)
+
+
+@app.get("/v1/sites/{site_id:path}")
+def site(site_id: str):
+    doc = store.current().site(site_id)
+    if doc is None:
+        raise HTTPException(404, f"no site graph {site_id!r}; see /v1/sites")
+    return doc
+
+
+@app.get("/v1/code-universe")
+def code_universe(ecosystem: str | None = None, q: str | None = None, limit: int = Query(30, ge=1, le=500)):
+    return _q(Q.code_universe, store.current(), ecosystem, q, limit)
+
+
+@app.post("/v1/site-graph")
+def site_graph_from_urls(body: dict = Body(..., examples=[{"urls": ["https://example.com/a/b"], "label": None}])):
+    urls = body.get("urls") or []
+    if not isinstance(urls, list) or not urls or len(urls) > 20000:
+        raise HTTPException(400, "send {'urls': [...]} with 1..20000 URLs")
+    try:
+        doc = graph_from_urls([str(u) for u in urls], body.get("label"))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return JSONResponse(doc, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/v1/activity")
+def activity(body: dict = Body(...)):
+    events = body.get("events") or []
+    if not isinstance(events, list) or len(events) > 50000:
+        raise HTTPException(400, "send {'events': [...]} with at most 50000 events")
+    return JSONResponse(Q.activity(store.current(), events), headers={"Cache-Control": "no-store"})
 
 
 # ------------------------------------------------------------------------------------------

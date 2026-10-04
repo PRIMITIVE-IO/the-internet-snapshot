@@ -45,7 +45,10 @@ class ASGraph:
 
     @classmethod
     def load(cls, path: Path) -> "ASGraph":
-        d = json.loads(Path(path).read_text())
+        return cls.load_dict(json.loads(Path(path).read_text()))
+
+    @classmethod
+    def load_dict(cls, d: dict) -> "ASGraph":
         nodes = {int(k): v for k, v in d["nodes"].items()}
         return cls(nodes, d["rels"], d.get("tier1", []), d.get("relationship_source", "unknown"),
                    d.get("hosting"), d.get("org_networks"))

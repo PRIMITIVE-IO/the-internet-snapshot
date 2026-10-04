@@ -1,0 +1,38 @@
+# Deploys public/ (committed snapshots + regenerated icons, ip2asn shards, agent files, viewer) to GitHub Pages.
+# Runs on relevant pushes, on demand, and is called by build-snapshot.yml after each rebuild.
+name: pages
+on:
+  push:
+    branches: [main]
+    paths: ["public/snapshots/latest.json", "viewer/**", "internet_snapshot/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main   # pick up a snapshot committed earlier in the same build-snapshot run
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt -r requirements-build.txt
+      - run: python -m internet_snapshot fetch --strict --only originasn lucide simpleicons_svg simpleicons
+      - run: python -m internet_snapshot pages --api-base "${{ vars.SNAPSHOT_API_BASE }}"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - id: deployment
+        uses: actions/deploy-pages@v4

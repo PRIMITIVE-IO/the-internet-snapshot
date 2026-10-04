@@ -27,9 +27,10 @@ def _allowed_classes(args) -> set[str]:
 
 
 def cmd_fetch(args) -> int:
-    from .sources import selected_sources
+    from .sources import SOURCES, selected_sources
     failed = 0
-    for s in selected_sources(args.source, _allowed_classes(args)):
+    chosen = [SOURCES[x] for x in args.only] if args.only else selected_sources(args.source, _allowed_classes(args))
+    for s in chosen:
         t = time.time()
         try:
             p = s.fetch(refresh=args.refresh)
@@ -43,9 +44,20 @@ def cmd_fetch(args) -> int:
 def cmd_build(args) -> int:
     from .build.pipeline import run_build
     sid = run_build(resolve_dns=args.resolve_dns, use_caida=args.caida, crux_max_rank=args.crux_max_rank,
-                    longtail_networks=args.networks, iters=args.iters)
+                    longtail_networks=args.networks, iters=args.iters, sites=not args.no_sites)
     print(sid)
     return 0
+
+
+def cmd_pages(args) -> int:
+    from .build.pages import build_pages
+    print(build_pages(api_base=args.api_base or None, ip2asn=not args.no_ip2asn))
+    return 0
+
+
+def cmd_mcp(args) -> int:
+    from .mcp_server import main as mcp_main
+    return mcp_main(args.base)
 
 
 def cmd_serve(args) -> int:
@@ -63,6 +75,7 @@ def main(argv=None) -> int:
 
     f = sub.add_parser("fetch", help="download raw public datasets into data/raw/")
     f.add_argument("--source", action="append", help="also fetch this opt-in source (repeatable)")
+    f.add_argument("--only", nargs="+", help="fetch exactly these sources")
     f.add_argument("--refresh", action="store_true", help="re-download even if present")
     f.add_argument("--sharealike", action="store_true", help="allow share-alike licensed sources")
     f.add_argument("--allow-noncommercial", action="store_true", help="allow non-commercial sources")
@@ -75,7 +88,17 @@ def main(argv=None) -> int:
     b.add_argument("--crux-max-rank", type=int, default=10_000)
     b.add_argument("--networks", type=int, default=1500, help="long-tail networks by address space")
     b.add_argument("--iters", type=int, default=160, help="layout iterations")
+    b.add_argument("--no-sites", action="store_true", help="skip site graphs and the code universe")
     b.set_defaults(fn=cmd_build)
+
+    pg = sub.add_parser("pages", help="assemble the GitHub Pages site in public/ (icons, ip2asn, agent files, viewer)")
+    pg.add_argument("--api-base", default=None, help="public URL of a deployed API server, if any")
+    pg.add_argument("--no-ip2asn", action="store_true")
+    pg.set_defaults(fn=cmd_pages)
+
+    m = sub.add_parser("mcp", help="run the MCP server (stdio) for AI agents")
+    m.add_argument("--base", default=None, help="local snapshots dir or base URL (default: $SNAPSHOT_BASE_URL or ./public)")
+    m.set_defaults(fn=cmd_mcp)
 
     s = sub.add_parser("serve", help="run the snapshot API server")
     s.add_argument("--host", default="0.0.0.0")

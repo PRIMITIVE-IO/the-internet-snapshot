@@ -34,7 +34,7 @@ def test_latest_points_to_manifest(snap):
     latest, manifest, _, root = snap
     assert manifest["snapshot_id"] == latest["snapshot_id"]
     assert (SNAPSHOTS_DIR / latest["manifest"]).exists()
-    assert manifest["format_version"] == latest["format_version"] == "0.1"
+    assert manifest["format_version"] == latest["format_version"] == "0.2"
     assert manifest["coordinate_system"]["up"] == "+Y"
 
 

@@ -487,7 +487,8 @@ A global node whose `portal` is non-null can be entered: load the referenced sit
   "host": "api.github.com",  // for matching (§13); may start with "*." for a wildcard
   "path": "/repos/{owner}/{repo}/issues",   // path template, or null
   "method": "GET",           // HTTP method, or null
-  "meta": { }                // free-form: stars, language, operations, owner, avatar, …
+  "portal": null,            // another site graph enterable from here (e.g. GitHub → "site:code-universe")
+  "meta": { }                // free-form: global (linked global node id), crux_rank, operations, stars, avatar, …
 }
 ```
 
@@ -548,7 +549,8 @@ GET /v1/locate?url=https://api.github.com/repos/octocat/hello/issues&method=GET
   "site":   { "id": "site:github", "node": "site:github/api/issues/GET /repos/{owner}/{repo}/issues",
               "path": ["site:github", "site:github/api", "site:github/api/issues", "…"], "pos": [..] },
   "operation": { "method": "GET", "path": "/repos/{owner}/{repo}/issues", "doc_url": "https://docs.github.com/…" },
-  "match": "operation"   // operation | path | host | domain | none
+  "match": "operation",  // operation | path | host | domain | none
+  "also": { "id": "site:code-universe", "node": "…" }   // optional secondary match, e.g. a github.com repo URL
 }
 ```
 
@@ -565,6 +567,18 @@ Clients may implement it themselves.
 5. **Fallbacks.**
    - If no path matches, the shallowest node with that host is a `host` match.
    - If the site only has the domain, it is a `domain` match.
+
+### 13.2 Site-graph endpoints (API server)
+
+```
+GET  /v1/sites                              → { "snapshot_id", "sites": [index entries] }
+GET  /v1/sites/{site_id}                    → site graph document
+GET  /v1/sites/{site_id|node|domain}/summary?depth=2      → top of the hierarchy, with child counts
+GET  /v1/sites/{site_id|node|domain}/endpoints?q=issues   → matching operations, APIs, hosts and sections
+GET  /v1/code-universe[?ecosystem=maven&q=spring]         → ecosystems, or top repos
+POST /v1/site-graph   { "urls": [...], "label"? }          → on-demand site graph from visited URLs (no-store)
+POST /v1/activity     { "events": [...] }                  → agent activity overlay (no-store)
+```
 
 ## 14. Agent activity overlay
 

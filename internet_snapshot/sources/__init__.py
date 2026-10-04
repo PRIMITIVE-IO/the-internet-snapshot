@@ -106,6 +106,29 @@ def _caida_latest(subdir: str, pattern: str):
     return resolve
 
 
+def _npm_tarball(package: str):
+    """Resolver: the latest published tarball of an npm package."""
+
+    def resolve(client: httpx.Client) -> str:
+        r = client.get(f"https://registry.npmjs.org/{package}")
+        r.raise_for_status()
+        d = r.json()
+        return d["versions"][d["dist-tags"]["latest"]]["dist"]["tarball"]
+
+    return resolve
+
+
+def _evanli_latest(client: httpx.Client) -> str:
+    """Resolver: the newest daily EvanLi/Github-Ranking CSV (published around 04:00 UTC)."""
+    base = "https://raw.githubusercontent.com/EvanLi/Github-Ranking/master/Data/github-ranking-{}.csv"
+    today = _dt.datetime.now(_dt.timezone.utc).date()
+    for back in range(0, 10):
+        url = base.format(today - _dt.timedelta(days=back))
+        if client.head(url).status_code == 200:
+            return url
+    raise RuntimeError("no EvanLi/Github-Ranking CSV in the last 10 days")
+
+
 SOURCES: dict[str, Source] = {s.id: s for s in [
     Source(
         id="crux", name="Chrome UX Report top lists (global)",
@@ -149,6 +172,45 @@ SOURCES: dict[str, Source] = {s.id: s for s in [
         license="CC0 1.0 (logos remain trademarks of their owners)", license_class="open",
         filename="simple-icons.json",
         attribution="Simple Icons (CC0); brand logos are trademarks of their respective owners",
+    ),
+    Source(
+        id="github_rest", name="GitHub REST API description (OpenAPI)",
+        url="https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json",
+        homepage="https://github.com/github/rest-api-description",
+        license="MIT", license_class="open", filename="api.github.com.json",
+        attribution="GitHub REST API description, GitHub Inc. (MIT)",
+    ),
+    Source(
+        id="google_discovery", name="Google API Discovery directory",
+        url="https://www.googleapis.com/discovery/v1/apis",
+        homepage="https://developers.google.com/discovery",
+        license="Google APIs Terms of Service (public API metadata)", license_class="open", filename="apis.json",
+        attribution="Google API Discovery Service directory",
+    ),
+    Source(
+        id="github_ranking", name="EvanLi/Github-Ranking (daily top-100 repositories per language)",
+        url="", homepage="https://github.com/EvanLi/Github-Ranking",
+        license="MIT", license_class="open", filename="github-ranking.csv", resolver=_evanli_latest,
+        attribution="EvanLi/Github-Ranking (MIT), from public GitHub repository metadata",
+    ),
+    Source(
+        id="lucide", name="Lucide icons (static SVG package)",
+        url="", homepage="https://lucide.dev", resolver=_npm_tarball("lucide-static"),
+        license="ISC", license_class="open", filename="lucide-static.tgz",
+        attribution="Lucide icons (ISC)",
+    ),
+    Source(
+        id="simpleicons_svg", name="Simple Icons (SVG package)",
+        url="", homepage="https://simpleicons.org", resolver=_npm_tarball("simple-icons"),
+        license="CC0 1.0 (logos remain trademarks of their owners)", license_class="open", filename="simple-icons.tgz",
+        attribution="Simple Icons (CC0); brand logos are trademarks of their respective owners",
+    ),
+    Source(
+        id="apis_guru", name="APIs.guru OpenAPI directory (list)",
+        url="https://api.apis.guru/v2/list.json", homepage="https://apis.guru",
+        license="CC0 1.0", license_class="open", filename="list.json", default=False,
+        attribution="APIs.guru OpenAPI directory (CC0)",
+        notes="optional: enriches site graphs with provider APIs (AWS, Microsoft Graph, Stripe, ...)",
     ),
     Source(
         id="caida_asrel", name="CAIDA AS Relationships (serial-2)",

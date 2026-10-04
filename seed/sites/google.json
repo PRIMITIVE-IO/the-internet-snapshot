@@ -1,0 +1,101 @@
+{
+  "_comment": "Curated structure of Google. Products link to global snapshot nodes; CrUX hostnames attach to the matching product; Google APIs from the Discovery directory attach to products by API-name prefix ('apis').",
+  "id": "google",
+  "label": "Google",
+  "root_node": "org:google",
+  "icon": "google",
+  "domains": ["google.com", "googleapis.com", "gstatic.com", "googleusercontent.com", "youtube.com", "ytimg.com",
+              "googlevideo.com", "ggpht.com", "doubleclick.net", "google-analytics.com", "googletagmanager.com",
+              "googlesyndication.com", "googleadservices.com", "gmail.com", "android.com", "withgoogle.com", "blogger.com",
+              "blogspot.com", "youtu.be", "waze.com", "kaggle.com", "fitbit.com", "go.dev", "golang.org", "firebaseapp.com",
+              "web.app", "appspot.com", "run.app", "google"],
+  "children": [
+    {"key": "search", "label": "Search & Knowledge", "glyph": "search", "weight": 1.0, "children": [
+      {"key": "search", "label": "Google Search", "global": "svc:google.com", "glyph": "search", "weight": 1.0,
+       "apis": ["customsearch", "kgsearch", "factchecktools", "searchconsole", "indexing"]},
+      {"key": "news", "label": "Google News", "global": "svc:news.google.com", "glyph": "newspaper"},
+      {"key": "scholar", "label": "Google Scholar", "global": "svc:scholar.google.com", "glyph": "graduation-cap"},
+      {"key": "translate", "label": "Google Translate", "global": "svc:translate.google.com", "glyph": "languages", "apis": ["translate"]},
+      {"key": "books", "label": "Google Books", "glyph": "book-open", "hosts": ["books.google.com", "play.google.com"], "apis": ["books"]}
+    ]},
+    {"key": "communication", "label": "Communication", "glyph": "message-circle", "weight": 0.9, "children": [
+      {"key": "gmail", "label": "Gmail", "global": "svc:gmail.com", "glyph": "mail", "weight": 1.0, "apis": ["gmail", "gmailpostmastertools"]},
+      {"key": "meet", "label": "Google Meet", "global": "svc:meet.google.com", "glyph": "video", "apis": ["meet"]},
+      {"key": "chat", "label": "Google Chat", "glyph": "message-circle", "hosts": ["chat.google.com"], "apis": ["chat"]},
+      {"key": "voice", "label": "Google Voice", "glyph": "phone", "hosts": ["voice.google.com"]},
+      {"key": "contacts", "label": "Contacts", "glyph": "user", "hosts": ["contacts.google.com"], "apis": ["people"]}
+    ]},
+    {"key": "workspace", "label": "Workspace", "glyph": "briefcase", "weight": 0.9, "children": [
+      {"key": "drive", "label": "Google Drive", "global": "svc:drive.google.com", "glyph": "hard-drive", "weight": 0.9,
+       "apis": ["drive", "driveactivity", "drivelabels"]},
+      {"key": "docs", "label": "Docs, Sheets, Slides, Forms", "global": "svc:docs.google.com", "glyph": "file-text", "weight": 0.9,
+       "apis": ["docs", "sheets", "slides", "forms"], "children": [
+        {"key": "document", "label": "Docs", "glyph": "file-text", "hosts": ["docs.google.com"], "path": "/document"},
+        {"key": "spreadsheets", "label": "Sheets", "glyph": "sheet", "hosts": ["docs.google.com"], "path": "/spreadsheets"},
+        {"key": "presentation", "label": "Slides", "glyph": "presentation", "hosts": ["docs.google.com"], "path": "/presentation"},
+        {"key": "forms", "label": "Forms", "glyph": "clipboard-list", "hosts": ["docs.google.com"], "path": "/forms"}
+      ]},
+      {"key": "calendar", "label": "Google Calendar", "global": "svc:calendar.google.com", "glyph": "calendar", "apis": ["calendar"]},
+      {"key": "keep", "label": "Google Keep", "glyph": "sticky-note", "hosts": ["keep.google.com"], "apis": ["keep"]},
+      {"key": "tasks", "label": "Google Tasks", "glyph": "list", "hosts": ["tasks.google.com"], "apis": ["tasks"]},
+      {"key": "sites", "label": "Google Sites", "glyph": "rocket", "hosts": ["sites.google.com"]},
+      {"key": "admin", "label": "Workspace Admin", "glyph": "settings", "hosts": ["admin.google.com"],
+       "apis": ["admin", "groupssettings", "licensing", "reseller", "vault", "alertcenter", "cloudsearch", "workspaceevents"]}
+    ]},
+    {"key": "media", "label": "Media & Play", "glyph": "play", "weight": 1.0, "children": [
+      {"key": "youtube", "label": "YouTube", "global": "svc:youtube.com", "glyph": "play", "weight": 1.0,
+       "apis": ["youtube", "youtubeAnalytics", "youtubereporting"]},
+      {"key": "ytmusic", "label": "YouTube Music", "global": "svc:music.youtube.com", "glyph": "music"},
+      {"key": "play", "label": "Google Play", "global": "svc:play.google.com", "glyph": "store",
+       "apis": ["androidpublisher", "playdeveloperreporting", "playintegrity", "games", "gamesConfiguration", "gamesManagement", "playcustomapp", "playgrouping"]},
+      {"key": "photos", "label": "Google Photos", "global": "svc:photos.google.com", "glyph": "image", "apis": ["photoslibrary"]}
+    ]},
+    {"key": "maps", "label": "Maps & Local", "glyph": "map", "weight": 0.8, "children": [
+      {"key": "maps", "label": "Google Maps", "global": "svc:maps.google.com", "glyph": "map-pin", "weight": 1.0,
+       "apis": ["places", "routes", "addressvalidation", "airquality", "pollen", "solar", "mapsplatformdatasets", "routeoptimization", "mybusiness", "businessprofileperformance"]},
+      {"key": "earth", "label": "Google Earth", "glyph": "earth", "hosts": ["earth.google.com"], "apis": ["earthengine"]},
+      {"key": "waze", "label": "Waze", "global": "svc:waze.com", "glyph": "navigation"}
+    ]},
+    {"key": "ai", "label": "AI", "glyph": "sparkles", "weight": 0.9, "children": [
+      {"key": "gemini", "label": "Gemini", "global": "svc:gemini.google.com", "glyph": "sparkles", "weight": 1.0, "apis": ["generativelanguage"]},
+      {"key": "aistudio", "label": "AI Studio", "glyph": "flask-conical", "hosts": ["aistudio.google.com"]},
+      {"key": "notebooklm", "label": "NotebookLM", "glyph": "book-open", "hosts": ["notebooklm.google.com", "notebooklm.google"]},
+      {"key": "colab", "label": "Colab", "global": "svc:colab.research.google.com", "glyph": "terminal"},
+      {"key": "kaggle", "label": "Kaggle", "global": "svc:kaggle.com", "glyph": "chart-line"},
+      {"key": "vertex", "label": "Vertex AI", "glyph": "cpu", "hosts": ["*-aiplatform.googleapis.com"],
+       "apis": ["aiplatform", "ml", "dialogflow", "discoveryengine", "documentai", "language", "vision", "speech", "texttospeech", "videointelligence", "contactcenterinsights", "retail", "recommendationengine", "notebooks"]}
+    ]},
+    {"key": "cloud", "label": "Cloud & Developers", "glyph": "cloud", "weight": 0.9, "children": [
+      {"key": "gcp", "label": "Google Cloud", "global": "svc:cloud.google.com", "glyph": "cloud", "weight": 1.0, "google_cloud_apis": true},
+      {"key": "firebase", "label": "Firebase", "global": "svc:firebase.google.com", "glyph": "flame",
+       "apis": ["firebase", "firebaseappcheck", "firebaseappdistribution", "firebasedatabase", "firebasedynamiclinks", "firebasehosting", "firebaseml", "firebaserules", "firebasestorage", "fcm", "fcmdata", "identitytoolkit", "firestore"]},
+      {"key": "googleapis", "label": "Google APIs platform", "global": "svc:googleapis.com", "glyph": "plug", "apis_rest": true},
+      {"key": "android", "label": "Android", "global": "svc:android.com", "glyph": "smartphone",
+       "apis": ["androidmanagement", "androiddeviceprovisioning", "androidenterprise", "androidpublisher"]},
+      {"key": "golang", "label": "Go", "global": "svc:go.dev", "glyph": "code"},
+      {"key": "developers", "label": "Developer docs", "glyph": "book-open", "hosts": ["developers.google.com", "developer.android.com"]}
+    ]},
+    {"key": "ads", "label": "Ads & Analytics", "glyph": "megaphone", "weight": 0.8, "children": [
+      {"key": "admanager", "label": "Ad Manager / DoubleClick", "global": "svc:doubleclick.net", "glyph": "megaphone",
+       "apis": ["dfareporting", "displayvideo", "doubleclickbidmanager", "doubleclicksearch", "adexchangebuyer2", "authorizedbuyersmarketplace", "realtimebidding", "adexperiencereport", "abusiveexperiencereport"]},
+      {"key": "adsense", "label": "AdSense & AdMob", "glyph": "coins", "hosts": ["adsense.google.com", "admob.google.com"], "apis": ["adsense", "adsensehost", "admob", "adsenseplatform"]},
+      {"key": "googleads", "label": "Google Ads", "glyph": "megaphone", "hosts": ["ads.google.com"], "apis": ["searchads360", "googleads"]},
+      {"key": "analytics", "label": "Google Analytics", "global": "svc:google-analytics.com", "glyph": "chart-line",
+       "apis": ["analytics", "analyticsadmin", "analyticsdata", "analyticsreporting", "analyticshub", "tagmanager"]},
+      {"key": "merchant", "label": "Merchant Center", "glyph": "shopping-cart", "hosts": ["merchants.google.com"], "apis": ["content", "merchantapi", "shoppingcontent"]}
+    ]},
+    {"key": "identity", "label": "Identity & Accounts", "glyph": "key-round", "weight": 0.7, "children": [
+      {"key": "accounts", "label": "Google Accounts", "global": "svc:accounts.google.com", "glyph": "key-round",
+       "apis": ["oauth2", "iam", "iamcredentials", "sts", "cloudidentity", "idp", "accesscontextmanager", "policytroubleshooter"]},
+      {"key": "myaccount", "label": "My Account", "glyph": "user", "hosts": ["myaccount.google.com"]},
+      {"key": "passwords", "label": "Password Manager", "glyph": "lock", "hosts": ["passwords.google.com"]}
+    ]},
+    {"key": "static", "label": "Static & CDN", "glyph": "zap", "weight": 0.6, "crux_hosts": true, "children": [
+      {"key": "gstatic", "label": "gstatic", "global": "svc:gstatic.com", "glyph": "zap"},
+      {"key": "usercontent", "label": "User content", "glyph": "image", "hosts": ["*.googleusercontent.com", "*.ggpht.com"]},
+      {"key": "video-cdn", "label": "Video delivery", "glyph": "video", "hosts": ["*.googlevideo.com", "*.ytimg.com"]},
+      {"key": "fonts", "label": "Fonts", "glyph": "type", "hosts": ["fonts.googleapis.com", "fonts.gstatic.com", "fonts.google.com"]},
+      {"key": "hosted-apps", "label": "Hosted apps (App Engine, Firebase, Run)", "glyph": "rocket", "hosts": ["*.appspot.com", "*.web.app", "*.firebaseapp.com", "*.run.app"]}
+    ]}
+  ]
+}

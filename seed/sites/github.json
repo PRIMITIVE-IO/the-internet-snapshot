@@ -1,0 +1,82 @@
+{
+  "_comment": "Curated structure of GitHub. Hostnames from CrUX attach under the deepest node whose 'hosts' match; the REST API surface is expanded from GitHub's OpenAPI description.",
+  "id": "github",
+  "label": "GitHub",
+  "root_node": "svc:github.com",
+  "icon": "github",
+  "domains": ["github.com", "githubusercontent.com", "githubassets.com", "github.io", "ghcr.io", "githubcopilot.com",
+              "github.dev", "githubstatus.com", "github.blog", "github.ai", "githubapp.com"],
+  "children": [
+    {"key": "web", "label": "Web app", "glyph": "app-window", "weight": 1.0, "hosts": ["github.com", "www.github.com"], "children": [
+      {"key": "repos", "label": "Repositories", "glyph": "folder-git-2", "path": "/{owner}/{repo}", "weight": 1.0},
+      {"key": "code", "label": "Code browser", "glyph": "file-code", "path": "/{owner}/{repo}/tree/{ref}", "weight": 0.8},
+      {"key": "blob", "label": "Files", "glyph": "file-code", "path": "/{owner}/{repo}/blob/{ref}", "weight": 0.7},
+      {"key": "issues", "label": "Issues", "glyph": "circle-dot", "path": "/{owner}/{repo}/issues", "weight": 0.9},
+      {"key": "pulls", "label": "Pull requests", "glyph": "git-pull-request", "path": "/{owner}/{repo}/pulls", "weight": 0.9},
+      {"key": "pull", "label": "Pull request", "glyph": "git-pull-request", "path": "/{owner}/{repo}/pull/{number}", "weight": 0.6},
+      {"key": "actions", "label": "Actions", "glyph": "workflow", "path": "/{owner}/{repo}/actions", "weight": 0.8},
+      {"key": "commits", "label": "Commits", "glyph": "git-commit-horizontal", "path": "/{owner}/{repo}/commits", "weight": 0.5},
+      {"key": "releases", "label": "Releases", "glyph": "tag", "path": "/{owner}/{repo}/releases", "weight": 0.6},
+      {"key": "discussions", "label": "Discussions", "glyph": "messages-square", "path": "/{owner}/{repo}/discussions", "weight": 0.5},
+      {"key": "wiki", "label": "Wiki", "glyph": "book-open", "path": "/{owner}/{repo}/wiki", "weight": 0.4},
+      {"key": "security", "label": "Security", "glyph": "shield-check", "path": "/{owner}/{repo}/security", "weight": 0.4},
+      {"key": "insights", "label": "Insights", "glyph": "chart-line", "path": "/{owner}/{repo}/pulse", "weight": 0.3},
+      {"key": "repo-settings", "label": "Repository settings", "glyph": "settings", "path": "/{owner}/{repo}/settings", "weight": 0.3},
+      {"key": "profiles", "label": "Profiles", "glyph": "user", "path": "/{user}", "weight": 0.7},
+      {"key": "orgs", "label": "Organizations", "glyph": "building-2", "path": "/orgs/{org}", "weight": 0.6},
+      {"key": "projects", "label": "Projects", "glyph": "kanban", "path": "/orgs/{org}/projects", "weight": 0.4},
+      {"key": "explore", "label": "Explore", "glyph": "compass", "path": "/explore", "weight": 0.5},
+      {"key": "trending", "label": "Trending", "glyph": "chart-line", "path": "/trending", "weight": 0.5},
+      {"key": "topics", "label": "Topics", "glyph": "hash", "path": "/topics/{topic}", "weight": 0.4},
+      {"key": "search", "label": "Search", "glyph": "search", "path": "/search", "weight": 0.6},
+      {"key": "marketplace", "label": "Marketplace", "glyph": "store", "path": "/marketplace", "weight": 0.4},
+      {"key": "sponsors", "label": "Sponsors", "glyph": "heart", "path": "/sponsors/{user}", "weight": 0.3},
+      {"key": "notifications", "label": "Notifications", "glyph": "bell", "path": "/notifications", "weight": 0.5},
+      {"key": "codespaces", "label": "Codespaces", "glyph": "monitor", "path": "/codespaces", "weight": 0.4},
+      {"key": "copilot-web", "label": "Copilot", "glyph": "sparkles", "path": "/copilot", "weight": 0.6},
+      {"key": "settings", "label": "Account settings", "glyph": "settings", "path": "/settings", "weight": 0.3},
+      {"key": "login", "label": "Sign in", "glyph": "key-round", "path": "/login", "weight": 0.4}
+    ]},
+    {"key": "api", "label": "REST API", "glyph": "braces", "weight": 1.0, "hosts": ["api.github.com"], "openapi": "github_rest",
+     "url": "https://docs.github.com/rest"},
+    {"key": "graphql", "label": "GraphQL API", "glyph": "waypoints", "weight": 0.6, "hosts": ["api.github.com"], "path": "/graphql",
+     "method": "POST", "url": "https://docs.github.com/graphql"},
+    {"key": "oauth", "label": "OAuth & apps", "glyph": "key-round", "weight": 0.5, "children": [
+      {"key": "authorize", "label": "Authorize (OAuth)", "glyph": "key-round", "hosts": ["github.com"], "path": "/login/oauth/authorize"},
+      {"key": "token", "label": "Access token", "glyph": "key-round", "hosts": ["github.com"], "path": "/login/oauth/access_token", "method": "POST"},
+      {"key": "device", "label": "Device flow", "glyph": "smartphone", "hosts": ["github.com"], "path": "/login/device"}
+    ]},
+    {"key": "content", "label": "Content & CDN", "glyph": "download", "weight": 0.8, "hosts": ["*.githubusercontent.com", "*.githubassets.com", "codeload.github.com", "uploads.github.com"], "crux_hosts": true, "children": [
+      {"key": "raw", "label": "Raw files", "glyph": "file-code", "hosts": ["raw.githubusercontent.com"]},
+      {"key": "avatars", "label": "Avatars", "glyph": "image", "hosts": ["avatars.githubusercontent.com"]},
+      {"key": "objects", "label": "Release & LFS objects", "glyph": "package", "hosts": ["objects.githubusercontent.com", "release-assets.githubusercontent.com"]},
+      {"key": "assets", "label": "Web assets", "glyph": "zap", "hosts": ["github.githubassets.com"]},
+      {"key": "codeload", "label": "Archive downloads", "glyph": "download", "hosts": ["codeload.github.com"]},
+      {"key": "uploads", "label": "Uploads", "glyph": "upload", "hosts": ["uploads.github.com"]}
+    ]},
+    {"key": "pages", "label": "GitHub Pages", "glyph": "rocket", "weight": 0.7, "hosts": ["*.github.io"]},
+    {"key": "packages", "label": "Packages & registries", "glyph": "package", "weight": 0.6, "children": [
+      {"key": "ghcr", "label": "Container registry", "glyph": "container", "hosts": ["ghcr.io"]},
+      {"key": "npm", "label": "npm registry", "icon": "npm", "hosts": ["npm.pkg.github.com"]},
+      {"key": "maven", "label": "Maven registry", "icon": "apachemaven", "hosts": ["maven.pkg.github.com"]},
+      {"key": "nuget", "label": "NuGet registry", "icon": "nuget", "hosts": ["nuget.pkg.github.com"]},
+      {"key": "rubygems", "label": "RubyGems registry", "icon": "rubygems", "hosts": ["rubygems.pkg.github.com"]}
+    ]},
+    {"key": "gists", "label": "Gists", "glyph": "file-text", "weight": 0.5, "hosts": ["gist.github.com", "gist.githubusercontent.com"]},
+    {"key": "ai", "label": "Copilot & AI", "glyph": "sparkles", "weight": 0.8, "children": [
+      {"key": "copilot-api", "label": "Copilot API", "glyph": "sparkles", "hosts": ["api.githubcopilot.com", "*.githubcopilot.com"]},
+      {"key": "models", "label": "GitHub Models", "glyph": "bot", "hosts": ["models.github.ai", "models.inference.ai.azure.com"]},
+      {"key": "agents", "label": "Coding agents", "glyph": "bot", "hosts": ["github.com"], "path": "/copilot/agents"}
+    ]},
+    {"key": "devplatform", "label": "Docs & community", "glyph": "book-open", "weight": 0.5, "children": [
+      {"key": "docs", "label": "Docs", "glyph": "book-open", "hosts": ["docs.github.com"]},
+      {"key": "blog", "label": "Blog", "glyph": "newspaper", "hosts": ["github.blog"]},
+      {"key": "status", "label": "Status", "glyph": "activity", "hosts": ["www.githubstatus.com", "githubstatus.com"]},
+      {"key": "education", "label": "Education", "glyph": "graduation-cap", "hosts": ["education.github.com"]},
+      {"key": "cli", "label": "GitHub CLI", "glyph": "terminal", "hosts": ["cli.github.com"]},
+      {"key": "editor", "label": "github.dev editor", "glyph": "terminal", "hosts": ["github.dev", "vscode.dev"]}
+    ]},
+    {"key": "opensource", "label": "Open-source universe", "glyph": "orbit", "weight": 0.9, "portal": "site:code-universe",
+     "url": "https://github.com/trending"}
+  ]
+}
