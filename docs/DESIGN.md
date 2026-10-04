@@ -1,6 +1,13 @@
 # The Internet Snapshot: design document
 
-**Status:** v0.1, 2026-10-04. The first working version is implemented and published. See §11 for what the current build contains and what is still approximate.
+**Status:** v0.2 design, 2026-10-04.
+
+- v0.1 (global snapshot, routes, overlays) is implemented and published. §11 says what it contains and what is still approximate.
+- v0.2 adds the following, with their client contract in `snapshot-format.md` §10–§15:
+  - GitHub-native hosting (§9)
+  - per-site endpoint graphs (§12)
+  - the GitHub code universe (§13)
+  - the agent interface (§14)
 **Audience:** two groups:
 
 - people building the snapshot pipeline;
@@ -21,6 +28,17 @@ The snapshot has four parts:
 2. **Wiring.** It shows the internet's *networks*: transit backbones, eyeball/access ISPs, IXPs, clouds and CDNs. It also shows the *route* traffic would take from the viewer's home network to any service.
 3. **Frozen layout.** Everything is laid out as a **frozen 3D force-directed layout on concentric spherical shells**. The viewer stands at the centre, which is their home network, and sees the internet as a skybox.
 4. **Private personal layer.** The user connects their own accounts (Google, GitHub, …). The slice of each service that the user controls appears as a small cluster attached to that service's node. For example, Gmail and Drive folders hang off Google, and repos hang off GitHub.
+5. **Site graphs ("microcosms").** Every major site or service family (Google, GitHub, Microsoft, Amazon, …) also gets its own frozen 3D force-directed graph of its endpoints, arranged in a hierarchy:
+   - surfaces → products/sections → hostnames and API groups → operations;
+   - sized by importance and iconised by function.
+
+   A user (or their agent) can "enter" a site from the global map. Services the user visits are added the same way. See §12.
+6. **Code universe.** The most popular open-source codebases on GitHub, grouped into their package-ecosystem domains (.NET/NuGet, JVM/Maven, npm, PyPI, RubyGems, PHP/Packagist, Go, Cargo, …). It is published as one more graph, reachable from GitHub's node. See §13.
+7. **Agents.** This is the age of AI-agent swarms. The snapshot is also a machine-readable map for the user's agents:
+   - an MCP server and discovery files let agents search, locate URLs, route and enumerate endpoints;
+   - an activity-overlay format lets the Primitive environment show where each agent in a swarm is working.
+
+   See §14.
 
 ### Division of responsibility
 
@@ -31,6 +49,9 @@ The snapshot has four parts:
 | Publishing immutable, versioned snapshot files | Downloading and caching snapshots |
 | Route inference (home → destination) | Drawing routes |
 | Personal-overlay connectors and the anchoring/placement contract | Holding the user's tokens and showing overlays |
+| Site graphs, code universe, icon atlases | Entering/exiting site graphs, rendering icons |
+| `locate()` + MCP server + activity-overlay format | Capturing the user's agents' activity and drawing agents and trails |
+| Building and publishing on GitHub (Actions → Pages, GHCR) | Pointing clients at the Pages URL |
 
 This service never changes the Primitive environment. It only publishes data and a contract.
 
@@ -310,53 +331,68 @@ Minimum scopes are read-only:
 
 ---
 
-## 9. Serving
+## 9. Hosting and serving (GitHub-native)
 
-### 9.1 Static snapshot (CDN-friendly)
-
-**Public URL:**
+Hosting follows the common practice for a GitHub repository: **GitHub Actions builds, GitHub Pages serves, and GitHub Container Registry (GHCR) holds the server image.** GitHub cannot run a long-lived server process. The design is therefore **static-first**: every client capability works from the static files on Pages alone. The API server is an optional convenience.
 
 ```
-https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public/snapshots/latest.json
+                ┌──────────── GitHub Actions (weekly + on demand) ────────────┐
+ public data ──▶│ fetch ▶ build snapshot ▶ site graphs ▶ code universe ▶ icons │
+                │        ▶ ip2asn shards ▶ tests ▶ commit snapshot ▶ deploy   │
+                └────────────┬──────────────────────────────┬─────────────────┘
+                             ▼                              ▼
+              GitHub Pages (static, CDN)            GHCR image (API server)
+   https://primitive-io.github.io/the-internet-snapshot/   ghcr.io/primitive-io/the-internet-snapshot
+     snapshots/ · icons/ · ip2asn/ · agent.json ·          optional: run anywhere; the GitHub-preferred
+     llms.txt · viewer                                     managed host is Azure Container Apps
 ```
 
-The repository is public and the snapshot is committed under `public/`. jsDelivr mirrors it as a CDN:
+### 9.1 GitHub Pages: the gateway
 
-```
-https://cdn.jsdelivr.net/gh/PRIMITIVE-IO/the-internet-snapshot@main/public/
-```
+**Canonical base URL:** **`https://primitive-io.github.io/the-internet-snapshot/`**
 
+| Path | Contents |
+|---|---|
+| `snapshots/latest.json` | The only mutable pointer |
+| `snapshots/<snapshot_id>/…` | Immutable snapshot: LOD files, aux files, `sites/` (site graphs and code universe) |
+| `icons/` | Icon atlases (PNG + JSON UV map) and SVGs: brand icons (Simple Icons, CC0) and function glyphs (Lucide, ISC) |
+| `ip2asn/v4/<first-octet>.json` | Sharded public-domain prefix→AS table, so clients can find their home AS without a server |
+| `agent.json`, `llms.txt` | Discovery files for AI agents (§14) |
+| `index.html` | The reference viewer |
 
-```
-public/snapshots/latest.json                      ← only mutable file (short TTL)
-public/snapshots/<snapshot_id>/manifest.json      ← immutable from here down
-public/snapshots/<snapshot_id>/lod0.json
-public/snapshots/<snapshot_id>/lod1.json
-public/snapshots/<snapshot_id>/lod2.json
-public/snapshots/<snapshot_id>/lod3/<healpix_order>-<ipix>.json
-public/snapshots/<snapshot_id>/anchors.json
-public/snapshots/<snapshot_id>/asgraph.json        ← compact AS relationship graph for offline routing
-```
-
+- Pages serves through a CDN with about 10 min of caching. Snapshot directories are content-addressed, so stale caches can never mix versions.
+- The raw-GitHub URL for the committed snapshot keeps working as a mirror.
 - `snapshot_id` = `YYYYMMDD-<sha8>`, where `sha8` is the first 8 hex digits of the content hash.
-- Any static host works: GitHub raw/Pages, S3 + CloudFront, or the bundled server.
 
-### 9.2 API server (FastAPI, `internet_snapshot.server`)
+### 9.2 What works statically, and how
+
+| Capability | Static (Pages only) | API server |
+|---|---|---|
+| Snapshot, site graphs, code universe, icons | Yes | Yes |
+| Home network | Client knows its public IP, then looks it up in `ip2asn` shards → AS | `GET /v1/whereami` (from the caller IP) |
+| Routes | Client runs the valley-free simulation over `asgraph.json` (algorithm in `snapshot-format.md` §5 and §7) | `GET /v1/route` |
+| Locate a URL | `domains.json` plus the site graph's `match` rules (`snapshot-format.md` §13) | `GET /v1/locate` |
+| Personal overlays | Client calls providers itself and places nodes with `snapshot-format.md` §8.4 | Stateless proxy `POST /v1/overlay/{provider}` |
+| Graph of a long-tail site the user visits | Client builds it from the user's own visited URLs (§12.4) | `POST /v1/site-graph` |
+| Agent tools | MCP server run locally beside the agent, reading Pages (§14) | Same |
+
+### 9.3 API server image
+
+- `.github/workflows/publish-image.yml` builds the `Dockerfile` and pushes `ghcr.io/primitive-io/the-internet-snapshot:{latest,<sha>}`.
+- If Azure credentials are configured as repository secrets, the same workflow also deploys the image to **Azure Container Apps**. Azure is Microsoft's managed container host, and GitHub Actions has first-party actions for it. Without those secrets, the deploy job is skipped.
+- The server is stateless apart from the snapshot files, so any container host works.
 
 | Method & path | Purpose |
 |---|---|
-| `GET /v1/snapshots/latest` | Pointer to the current snapshot |
-| `GET /v1/snapshots/{id}/{file}` | Static snapshot files: immutable caching, ETag, gzip |
+| `GET /v1/snapshots/latest.json`, `GET /v1/snapshots/{id}/{file}` | Snapshot files: immutable caching, ETag, gzip |
 | `GET /v1/whereami` | Caller IP → home AS → backbone node and position |
-| `GET /v1/route?to=<node-id or domain>[&asn=][&ip=]` | Route from home to the destination |
-| `GET /v1/search?q=` | Find nodes by label or domain |
-| `GET /v1/node/{id}` | Node details plus neighbours |
-| `GET /v1/connectors` | Personal-overlay connector specs |
-| `POST /v1/overlay/{provider}` | Stateless overlay proxy (§8.3) |
-| `GET /healthz` | Liveness |
-| `GET /viewer/` | Reference web viewer (three.js). A debugging aid that renders the snapshot exactly per the contract. |
-
-**Deployment.** The `Dockerfile` runs this server. With `SNAPSHOT_FETCH_LOOKUPS=1`, it downloads the IP→ASN tables at startup so `whereami` works from the caller's IP. The server is stateless apart from the snapshot files, so any container host works.
+| `GET /v1/route?to=…[&asn=][&ip=]` | Route from home to the destination |
+| `GET /v1/locate?url=…[&method=]` | URL → global node, site graph and site node, API operation (§14) |
+| `GET /v1/search?q=`, `GET /v1/node/{id}` | Lookup |
+| `GET /v1/sites`, `GET /v1/sites/{site_id}` | Site-graph index and site graphs (§12) |
+| `POST /v1/site-graph` | Lay out a site graph from a list of URLs: stateless, for long-tail sites the user visits |
+| `GET /v1/connectors`, `POST /v1/overlay/{provider}` | Personal overlays (§8) |
+| `GET /healthz`, `GET /viewer/` | Liveness, reference viewer |
 
 ---
 
@@ -371,9 +407,14 @@ fetch ─▶ normalise ─▶ build graph ─▶ hierarchy+weights ─▶ layout
 - `python -m internet_snapshot build` produces `public/snapshots/<id>/` and updates `latest.json`.
 - `python -m internet_snapshot serve` runs the API server.
 
-**Scheduling.** `.github/workflows/build-snapshot.yml` rebuilds the snapshot on GitHub-hosted runners, which have open egress. It runs weekly and on demand, runs the tests, and commits the new `public/snapshots/<id>/`. Old snapshots are pruned to the last 3.
+**Scheduling.** `.github/workflows/build-snapshot.yml` runs on GitHub-hosted runners, which have open egress. It runs weekly and on demand, and performs these steps:
 
-**Repo size.** Committing snapshots to git is the bootstrap hosting. Once snapshots grow past roughly 50 MB, move them to object storage (S3/R2 + CDN) and keep only `latest.json` in git.
+1. Rebuilds everything.
+2. Runs the tests.
+3. Commits `public/snapshots/<id>/`. Old snapshots are pruned to the last 3.
+4. Deploys `public/` (snapshots, icons, ip2asn shards, agent files, viewer) to GitHub Pages.
+
+The ip2asn shards and the icon atlases are regenerated each build and only deployed to Pages; they are not committed to git.
 
 ### Roadmap
 
@@ -384,6 +425,8 @@ fetch ─▶ normalise ─▶ build graph ─▶ hierarchy+weights ─▶ layout
 | v0.3 | AS relationships inferred by ourselves from RouteViews (licence-clean); observed-path lookup; OSM submarine cables as backbone arcs |
 | v0.4 | Common Crawl domain-graph affinity edges; HTTP Archive CDN attribution; binary/GLB tile option |
 | v0.5 | More connectors (Microsoft, Slack, Notion, AWS); delta snapshots |
+| **v0.2-sites** | GitHub Pages hosting; site graphs; code universe; icon atlases; `locate`; MCP server; agent activity overlay format |
+| later | Common Crawl URL-index paths for long-tail site graphs; dependency edges between code-universe repos (deps.dev / ecosyste.ms); live swarm-activity relay |
 
 ---
 
@@ -400,3 +443,161 @@ fetch ─▶ normalise ─▶ build graph ─▶ hierarchy+weights ─▶ layout
 | IXPs | 23 major IXPs at real metro locations. Membership is heuristic until PeeringDB is enabled. |
 | Layout | Deterministic. The same inputs give the same snapshot id. |
 | Overlays | GitHub and Google connectors implemented and tested against mocked APIs. Live OAuth is the client's responsibility. |
+
+---
+
+## 12. Site graphs ("microcosms")
+
+### 12.1 What and why
+
+Every major website or service family gets **its own frozen, hierarchical 3D force-directed graph of its endpoints**. Examples are Google, GitHub, Microsoft, Amazon, Meta and Apple, plus any curated service with enough structure.
+
+In the global snapshot a site is a single node, or an org with a few services. When the user or their agent *goes into* it, the Primitive environment swaps in or nests that site's graph.
+
+- **Same metaphor.** The site sits at the centre with the viewer. Its structure surrounds them on concentric shells: surfaces → products → endpoints → operations.
+- **Same coordinate conventions** as the global map. The site graph can be shown either as a skybox (the user has entered the site) or miniaturised at the site's node in the global view, by scaling by `radius / 1000`.
+
+### 12.2 Hierarchy
+
+| Depth | Kind | Examples (Google) | Examples (GitHub) |
+|---|---|---|---|
+| 0 | `site` | Google | GitHub |
+| 1 | `surface` | Consumer apps, Workspace, Developer APIs, Cloud, Ads & Analytics, Identity, Static/CDN | Web app, REST API, Content & CDN, Packages, Pages, AI |
+| 2 | `product` / `section` / `api-group` | Gmail, Drive, Maps, YouTube…; Gmail API, Drive API… | Repositories, Issues, Pull requests, Actions…; API groups `repos`, `issues`, `actions`… |
+| 3 | `host` / `api` / `endpoint` | `mail.google.com`, `gmail.googleapis.com` | `api.github.com/repos/{owner}/{repo}` path groups |
+| 4 | `operation` | (API methods, when cheap to list) | `GET /repos/{owner}/{repo}/issues` |
+
+**Edges.** Hierarchy is implied by `parent`. Cross-links are explicit edges:
+
+- `serves`: a host serves a product;
+- `implements`: an API backs a product;
+- `same_resource`: a web section and its API group;
+- `links_to`: a link from one page to another (future: Common Crawl).
+
+### 12.3 Data sources (still no crawling)
+
+| Source | Gives | Licence |
+|---|---|---|
+| Curated `seed/sites/*.json` | Surfaces, products and sections of the major sites, with glyphs | ours (MIT) |
+| CrUX top-1M origins | Every popular **hostname** under the site's domains, with popularity | CC BY 4.0 |
+| GitHub REST API description (`github/rest-api-description`) | Every GitHub API operation, grouped by category | MIT |
+| Google API Discovery directory (`googleapis.com/discovery/v1/apis`) | Every public Google API, with title, docs link and root URL | Google API Terms (metadata) |
+| APIs.guru OpenAPI directory | APIs of about 700 providers (Stripe, Twilio, Slack, Microsoft Graph…) | CC0 |
+| *Planned:* Common Crawl URL index | Page-path hierarchy of any site | CC ToU |
+| *Private, client-side:* URLs the user or their agents actually visit | The parts of a long-tail site that matter to *this* user | never leaves the client |
+
+### 12.4 Which sites get graphs
+
+- **Precomputed** (in the snapshot): every multi-service org, plus every curated service with at least 6 endpoint nodes.
+- **On demand.** For any service the user visits, the client builds a site graph from the URLs it has seen, using the same hierarchy rules. Hierarchy: host → first path segment → second path segment … (path templates like `/{id}` are collapsed).
+  - The client can lay it out with `POST /v1/site-graph` (API server or local MCP server).
+  - Or it can use the precomputed graph and add its URLs as overlay leaves under the deepest matching node.
+
+### 12.5 Importance and icons
+
+- **Size** is in 0..1. It is the max of these signals, then normalised per graph:
+  - the curated weight;
+  - the CrUX rank of the hostname;
+  - `log(number of operations)` for API groups;
+  - `log(subtree size)`.
+- **`icon`**: a Simple Icons brand slug, for brands and products that have one.
+- **`glyph`**: a [Lucide](https://lucide.dev) icon name that says *what is at the endpoint*, for example:
+  - `mail` for an inbox, `folder` for storage, `git-pull-request` for PRs;
+  - `play` for video, `credit-card` for payments, `key-round` for auth.
+
+  It is assigned from curated data, or from keyword rules over names and paths.
+- Both icon sets are published on Pages as **PNG atlases with a JSON UV map** (Unity-ready) and as SVGs.
+
+### 12.6 Layout: radial sectors
+
+1. **Shells.** The root is at the origin. Depth *d* sits on shell `r_d = radius · d / max_depth`, with `radius = 1000`.
+2. **Sectors.** Each depth-1 subtree gets an equal-area HEALPix sector proportional to its subtree weight. The sectors are grown exactly like realms in the global map. Recursively, each depth-2 subtree gets a sub-sector inside its parent's sector.
+3. **Relaxation.** The spherical spring embedder (parent–child springs, cross-link springs, repulsion, sector containment) runs per shell.
+4. **Determinism.** The result is frozen and deterministic.
+
+The outermost shell therefore reads as a skybox of the site's finest endpoints, clustered by the products they belong to.
+
+---
+
+## 13. Code universe (GitHub)
+
+### 13.1 What
+
+The code universe is a graph of **the most popular open-source codebases on GitHub, grouped into their package-ecosystem "domains"**. It ships as a site graph of kind `code` with id `site:code-universe`. Its portal is GitHub's node (`svc:github.com`).
+
+### 13.2 Hierarchy
+
+```
+universe ─▶ ecosystem domain ─▶ language ─▶ purpose cluster ─▶ repository
+            .NET (NuGet)         C#, F#        web framework     dotnet/runtime …
+            JVM (Maven)          Java, Kotlin, Scala, Groovy, Clojure
+            JavaScript (npm)     JavaScript, TypeScript, CoffeeScript, Vue …
+            Python (PyPI)        Python
+            Ruby (RubyGems) · PHP (Packagist) · Go (modules) · Rust (Cargo)
+            Apple (SwiftPM/CocoaPods) · Native C/C++ (vcpkg/Conan) · Dart (pub)
+            BEAM (Hex) · R (CRAN) · Haskell (Hackage) · Julia · Lua (LuaRocks)
+            Perl (CPAN) · Shell & tooling · Web (HTML/CSS) · Knowledge (lists, books)
+```
+
+- **Purpose clusters** come from keyword rules over the description, and over topics when available. Examples: web framework, machine learning, devtools/CLI, database, mobile, game engine, infrastructure, editor, UI, security, education/lists.
+- **Owner hubs.** An owner with three or more top repos (Microsoft, Google, Meta, Apache, …) becomes an `owner` node with `maintains` edges. This links ecosystems: TypeScript, VS Code and .NET all connect to Microsoft.
+
+### 13.3 Data
+
+| Source | Use | Licence |
+|---|---|---|
+| **EvanLi/Github-Ranking** | Daily top-100-by-stars per language, for 34 languages, about 3.4k repos. Baseline, no auth. | MIT |
+| **GitHub Search API** (in CI, with `GITHUB_TOKEN`) | Enriches with topics, owner avatar, licence and homepage, and extends to the top 200 per ecosystem | GitHub API Terms (public repository metadata) |
+| *Planned:* deps.dev / ecosyste.ms | Real dependency edges between repos | CC BY 4.0 / CC BY-SA 4.0 |
+
+Size is `log(stars)`, normalised. Glyphs are by purpose. Ecosystem icons are the ecosystem's brand icon (dotnet, apachemaven, npm, python, ruby, php, go, rust, swift, …).
+
+---
+
+## 14. Agents: the snapshot in the age of AI-agent swarms
+
+### 14.1 Goals
+
+The user's agents, alone or in swarms, should be able to:
+
+1. **Understand** the map: what is out there, grouped by function and hierarchy.
+2. **Navigate** it: search, find which node and endpoint a URL belongs to, find routes, and enumerate a service's API endpoints and documentation.
+3. **Be seen**: the Primitive environment shows each agent's activity as positions and trails in the same 3D space. The user can then supervise a swarm spatially.
+
+### 14.2 Discovery
+
+These files are published on Pages:
+
+- `agent.json`: a machine-readable capability descriptor. It lists the data URLs, the API base (if deployed), the MCP install command, tool names and the licence and attribution.
+- `llms.txt`: a plain-language guide for LLM agents.
+
+### 14.3 MCP server
+
+`python -m internet_snapshot mcp` is a Model Context Protocol server over stdio. It is installable straight from GitHub (`pip install git+https://github.com/PRIMITIVE-IO/the-internet-snapshot`).
+
+It reads either local files or the Pages base URL, so **no hosted server is needed** and each agent runs its own. Tools:
+
+| Tool | Purpose |
+|---|---|
+| `search(query)` | Find services, orgs and networks |
+| `describe(node_id)` | Node details, children, edges, and whether a site graph exists |
+| `locate(url, method?)` | URL → global node, site graph and site node path, plus the matched API operation and its documentation link |
+| `route(to, asn? / ip?)` | Home → destination AS path, with 3D hop positions |
+| `site_graph(site_or_node, depth?)` | Summarised hierarchy of a site's endpoints |
+| `list_endpoints(service, query?)` | API operations and hosts of a service, for agents that are about to call it |
+| `code_universe(ecosystem?, query?)` | Top repos per ecosystem domain |
+| `whereami(ip?)` | Home AS lookup |
+
+### 14.4 Agent activity overlay
+
+The Primitive environment records what the user's agents do: HTTP calls, page visits and tool calls. The recording happens on the client, and the data is private by default. It turns each event into a position with `locate()`:
+
+```
+event {agent, ts, kind, method, url, status}
+   ─▶ locate(url) ─▶ {global node, site node, operation}
+   ─▶ agent avatar moves there; trail = home ─▶ route hops ─▶ service ─▶ site node
+```
+
+- **Swarms** are many agents. They are drawn as many avatars. Per-node activity counts become a heat overlay.
+- The overlay document is specified in `snapshot-format.md` §14. It follows the same pattern as personal overlays: ids prefixed `ag:`, positions in the same coordinates, and a stateless "build from events" function.
+- This service only provides the mapping and the format. Capturing and storing activity is the client's job.

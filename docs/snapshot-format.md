@@ -1,4 +1,4 @@
-# Snapshot format and API contract: format_version 0.1
+# Snapshot format and API contract: format_version 0.2
 
 This is the **wire contract** between the Internet Snapshot service and any client, in particular the Primitive environment (Unity). The design rationale is in [`DESIGN.md`](DESIGN.md).
 
@@ -6,6 +6,10 @@ Versioning rules:
 
 - Within a `format_version` major.minor, only *additive* changes are made (new fields, new kinds).
 - Clients must ignore unknown fields and unknown `kind` values.
+- v0.2 is a strict superset of v0.1. It adds:
+  - the `portal` and `glyph` node fields;
+  - site graphs (§11), icons (§12), `locate` (§13), the agent activity overlay (§14) and agent discovery (§15);
+  - GitHub Pages as the canonical host (§10).
 
 ---
 
@@ -18,9 +22,9 @@ GET {base}/snapshots/latest.json
 `{base}` is either of:
 
 - the API server's `/v1` prefix, for example `https://<host>/v1`;
-- any static mirror of `public/`. The canonical public mirror is
-  **`https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public`**. The
-  jsDelivr CDN mirror `https://cdn.jsdelivr.net/gh/PRIMITIVE-IO/the-internet-snapshot@main/public` also works.
+- any static mirror of `public/`:
+  - The canonical public host is **GitHub Pages: `https://primitive-io.github.io/the-internet-snapshot`** (see §10).
+  - Mirror: `https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public`. It carries the snapshots, but not the Pages-only `icons/` or `ip2asn/`.
 
 Static mirrors serve every file. The query endpoints (`/v1/route`, `/v1/whereami`, `/v1/search`, `/v1/node`, `/v1/overlay`) need the API server.
 
@@ -28,7 +32,7 @@ Static mirrors serve every file. The query endpoints (`/v1/route`, `/v1/whereami
 {
   "snapshot_id": "20261004-3f9c2a1b",
   "created_at": "2026-10-04T21:00:00Z",
-  "format_version": "0.1",
+  "format_version": "0.2",
   "manifest": "20261004-3f9c2a1b/manifest.json"
 }
 ```
@@ -145,7 +149,9 @@ Every node object has the same keys. Keys that do not apply are `null`.
   "asn": null,                    // networks
   "country": null,                // ISO-3166 alpha-2 when known
   "icon": "gmail",                // simple-icons slug when known (https://simpleicons.org)
-  "url": "https://mail.google.com"
+  "url": "https://mail.google.com",
+  "glyph": "mail",                // v0.2: Lucide glyph name for what the node *is* (§12)
+  "portal": "site:google"         // v0.2: site graph you can enter from this node (§11), or null
 }
 ```
 
@@ -372,3 +378,240 @@ GET /v1/search?q=git&limit=20     → [{ "id", "label", "kind", "domain", "lod",
 GET /v1/node/{id}                 → { "node": Node, "edges": [Edge], "children": [ids] }
 GET /healthz                      → { "ok": true, "snapshot_id": … }
 ```
+
+---
+
+# v0.2 additions
+
+## 10. Hosting: GitHub Pages and static-only operation
+
+**Base URL:** `https://primitive-io.github.io/the-internet-snapshot`. Every file below is relative to it.
+
+```
+snapshots/latest.json                      mutable pointer (≈10 min CDN cache)
+snapshots/<id>/…                           immutable snapshot, including sites/
+icons/index.json, icons/atlas-64.png, icons/glyphs/<name>.svg, icons/brands/<slug>.svg
+ip2asn/v4/index.json, ip2asn/v4/<first-octet>.json
+agent.json, llms.txt
+index.html                                 reference viewer
+```
+
+### 10.1 `ip2asn` shards: finding the home AS without a server
+
+`ip2asn/v4/index.json`:
+
+```json
+{ "source": "sapics/ip-location-db origin-asn", "license": "PDDL-1.0", "generated_at": "…", "shards": 224 }
+```
+
+`ip2asn/v4/<a>.json` holds the ranges whose first octet is `a`:
+
+```jsonc
+{ "ranges": [[16777216, 16777471, 13335], …] }   // [start, end, asn], 32-bit unsigned ints, sorted by start
+```
+
+**Lookup:**
+
+1. Convert the IPv4 address to a uint32.
+2. Fetch shard `a` (the first octet).
+3. Binary-search for the last range with `start ≤ ip`, and check `ip ≤ end`.
+
+The client must know its own public IP, for example from its platform backend or a STUN binding request. A missing shard or no match means the AS is unknown.
+
+### 10.2 Client-side routing
+
+With `asgraph.json` (§5) a client can compute routes without the server. Let `dst` be the destination AS:
+
+1. **Customer routes.** Breadth-first search from `dst` up provider links. An AS reached this way has route type *customer*, length = BFS depth, next hop = the AS it was reached from.
+2. **Peer routes.** For every AS with a customer route (and for `dst` itself), each of its peers that has no route yet gets type *peer*, length + 1.
+3. **Provider routes.** In order of route length, push routes down provider→customer links to ASes with no customer or peer route.
+4. **Ties** are broken by lower length, then lower next-hop ASN. Follow next hops from the source AS to `dst`.
+
+If the home AS is unknown, attach it as a customer of two tier-1s from its region. The reference implementation is `internet_snapshot/routing.py`.
+
+## 11. Site graphs
+
+### 11.1 Index
+
+The manifest gains `"files": { …, "sites": "sites/index.json" }`.
+
+```jsonc
+// snapshots/<id>/sites/index.json
+{
+  "snapshot_id": "…",
+  "sites": [
+    { "id": "site:google", "kind": "site", "label": "Google", "root_node": "org:google",
+      "file": "sites/google.json", "nodes": 640, "edges": 120, "bytes": 312345, "max_depth": 4,
+      "icon": "google", "hosts": ["google.com", "googleapis.com", "…"] },
+    { "id": "site:code-universe", "kind": "code", "label": "GitHub code universe", "root_node": "svc:github.com",
+      "file": "sites/code-universe.json", … }
+  ]
+}
+```
+
+A global node whose `portal` is non-null can be entered: load the referenced site file.
+
+### 11.2 Site graph file
+
+```jsonc
+{
+  "graph_version": "0.2",
+  "snapshot_id": "…",
+  "id": "site:github", "kind": "site", "label": "GitHub", "root_node": "svc:github.com",
+  "radius": 1000, "max_depth": 4, "shells": [0, 250, 500, 750, 1000],
+  "nodes": [ SiteNode ],
+  "edges": [ SiteEdge ],
+  "sources": [ { "id", "name", "license", "url" } ],
+  "attribution": "…"
+}
+```
+
+**Coordinates.** They are the same as the global snapshot: Unity axes, metres. The **site itself is at the origin**, so a viewer standing at the origin sees the site as a skybox. To show the site miniaturised at its global node, scale by `s = desired_radius / radius` and translate to that node's `pos`.
+
+**SiteNode.** Every SiteNode object has the same keys:
+
+```jsonc
+{
+  "id": "site:github/api/issues/GET /repos/{owner}/{repo}/issues",
+  "kind": "operation",       // site | surface | product | section | host | api-group | api | endpoint | operation
+                             // code universe: universe | ecosystem | language | cluster | owner | repo
+  "label": "List repository issues",
+  "parent": "site:github/api/issues",
+  "depth": 4,
+  "r": 1000.0, "az": 12.3, "el": -4.5, "pos": [x, y, z],
+  "size": 0.42,              // importance 0..1 within this graph
+  "color": "#64FFDA",        // inherited from the depth-1 branch
+  "icon": "github",          // Simple Icons slug or null
+  "glyph": "circle-dot",     // Lucide glyph name or null
+  "url": "https://docs.github.com/rest/issues/issues#list-repository-issues",   // human/doc link
+  "host": "api.github.com",  // for matching (§13); may start with "*." for a wildcard
+  "path": "/repos/{owner}/{repo}/issues",   // path template, or null
+  "method": "GET",           // HTTP method, or null
+  "meta": { }                // free-form: stars, language, operations, owner, avatar, …
+}
+```
+
+**SiteEdge:**
+
+```jsonc
+{ "source", "target", "kind", "weight", "a": [x,y,z], "b": [x,y,z] }
+```
+
+| `kind` | Meaning |
+|---|---|
+| `serves` | A host serves a product |
+| `implements` | An API backs a product |
+| `same_resource` | A web section and its API group |
+| `maintains` | An owner and its repos (code universe) |
+| `links_to` | Reserved for page-link edges |
+
+Parent/child containment is the `parent` field.
+
+### 11.3 Code universe specifics
+
+The code universe has `kind: "code"`, `id: "site:code-universe"`, and `root_node: "svc:github.com"`. Its node kinds:
+
+- `ecosystem`: for example `.NET (NuGet)`. `meta.registry` is the package registry.
+- `language`
+- `cluster`: a purpose, such as web framework or machine learning.
+- `owner`: an owner with three or more top repos.
+- `repo`, with `meta`: `full_name`, `stars`, `forks`, `language`, `description`, `owner`, `avatar` (when known), `last_commit`, `rank_in_language`.
+
+## 12. Icons
+
+`icons/index.json`:
+
+```jsonc
+{
+  "atlases": [ { "file": "icons/atlas-64.png", "cell": 64, "width": 2048, "height": 2048,
+                 "cells": { "glyph:mail": [0, 0], "brand:github": [64, 0], … } } ],   // top-left pixel of each cell
+  "svg": { "glyph": "icons/glyphs/{name}.svg", "brand": "icons/brands/{name}.svg" },
+  "brand_colors": { "github": "#181717", … },
+  "licenses": { "glyph": "Lucide (ISC)", "brand": "Simple Icons (CC0); logos are trademarks of their owners" }
+}
+```
+
+- Icons are **white on transparent**, so tint them in the shader. Use the node `color`, or `brand_colors` for brands.
+- UV for a cell `[x, y]`: `u0 = x/width`, `v0 = 1 − (y+cell)/height`, `u1 = (x+cell)/width`, `v1 = 1 − y/height`.
+- Fallback when a name is missing from the atlas: use the glyph `circle`.
+
+## 13. Locate: URL → place in the map
+
+```
+GET /v1/locate?url=https://api.github.com/repos/octocat/hello/issues&method=GET
+```
+
+```jsonc
+{
+  "url": "…", "host": "api.github.com",
+  "global": { "node": "svc:github.com", "label": "GitHub", "kind": "service", "pos": [..] },
+  "site":   { "id": "site:github", "node": "site:github/api/issues/GET /repos/{owner}/{repo}/issues",
+              "path": ["site:github", "site:github/api", "site:github/api/issues", "…"], "pos": [..] },
+  "operation": { "method": "GET", "path": "/repos/{owner}/{repo}/issues", "doc_url": "https://docs.github.com/…" },
+  "match": "operation"   // operation | path | host | domain | none
+}
+```
+
+### 13.1 Algorithm
+
+Clients may implement it themselves.
+
+1. **Global node.** Walk up the host labels against `domains.json`.
+2. **Site.** The site is the global node's `portal`. Failing that, use its org's `portal`.
+3. **Candidates.** In the site graph, take nodes whose `host` equals the URL host, or whose `host` is `*.suffix` and the URL host ends with `.suffix`.
+4. **Path matching.** Among the candidates that have a `path`, compare segment by segment. A `{param}` segment matches any single segment.
+   - Prefer, in order: the most literal segments, then the longest template, then a `method` match.
+   - An exact operation match is `operation`. A path-prefix match is `path`.
+5. **Fallbacks.**
+   - If no path matches, the shallowest node with that host is a `host` match.
+   - If the site only has the domain, it is a `domain` match.
+
+## 14. Agent activity overlay
+
+The client records its agents' activity. An **ActivityEvent** looks like this:
+
+```jsonc
+{ "agent": "planner-1", "ts": "2026-10-04T21:00:00Z", "kind": "http",   // http | browse | tool
+  "method": "GET", "url": "https://api.github.com/repos/o/r/issues", "status": 200, "duration_ms": 120 }
+```
+
+It turns events into an overlay. It can do this locally (§13), or with the stateless endpoint `POST /v1/activity` (body `{ "events": [...], "asn": <home ASN, optional> }`):
+
+```jsonc
+{
+  "overlay_version": "0.2", "kind": "agent-activity", "snapshot_id": "…",
+  "agents": [
+    { "id": "ag:planner-1", "label": "planner-1", "color": "#FF4081",
+      "at": { "space": "global", "node": "svc:github.com", "pos": [..] },
+      "at_site": { "space": "site:github", "node": "site:github/api/issues/…", "pos": [..] },
+      "trail": [ { "ts": "…", "space": "global", "node": "svc:github.com", "pos": [..], "match": "operation" } ] }
+  ],
+  "heat": [ { "space": "global", "node": "svc:github.com", "count": 12 },
+            { "space": "site:github", "node": "site:github/api/issues", "count": 9 } ]
+}
+```
+
+- `space` is `"global"` (global coordinates) or a site id (that site's local coordinates).
+- Agent colours are deterministic per agent id: hue = hash(id) mod 360.
+- Draw the route from home to a new service once per agent per service, using `/v1/route` or §10.2.
+- Nothing about activity is stored by this service.
+
+## 15. Agent discovery and MCP
+
+`agent.json` (on Pages):
+
+```jsonc
+{
+  "name": "the-internet-snapshot", "description": "…",
+  "data": { "base": "https://primitive-io.github.io/the-internet-snapshot", "latest": "snapshots/latest.json",
+            "contract": "https://github.com/PRIMITIVE-IO/the-internet-snapshot/blob/main/docs/snapshot-format.md" },
+  "api": { "base": null },          // set when an API server is deployed
+  "mcp": { "command": "python", "args": ["-m", "internet_snapshot", "mcp"],
+           "install": "pip install git+https://github.com/PRIMITIVE-IO/the-internet-snapshot",
+           "env": { "SNAPSHOT_BASE_URL": "https://primitive-io.github.io/the-internet-snapshot" } },
+  "tools": ["search", "describe", "locate", "route", "site_graph", "list_endpoints", "code_universe", "whereami"],
+  "attribution": "…"
+}
+```
+
+The MCP server's tools mirror the API. Results are JSON and use the node ids of this contract, so an agent's tool results can be placed directly in the Primitive environment.
