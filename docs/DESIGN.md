@@ -1,6 +1,6 @@
 # The Internet Snapshot: design document
 
-**Status:** v0.1, 2026-10-04. Covers the first working version and its roadmap.
+**Status:** v0.1, 2026-10-04. The first working version is implemented and published. See §11 for what the current build contains and what is still approximate.
 **Audience:** two groups:
 
 - people building the snapshot pipeline;
@@ -78,14 +78,15 @@ The full survey is in [`research/`](research/). The table below lists what the p
 | AS names and countries | **ipverse/asn-info** | CC0 | ✅ |
 | Prefix → origin AS, address-space weight | **iptoasn / sapics origin-asn** | PDDL | ✅ |
 | Country centroids (geo anchors) | **Google DSPL countries.csv** | CC BY | ✅ |
-| Cloud provider ranges | AWS / GCP / Azure / Cloudflare / Fastly / Oracle JSON | factual | ✅ |
-| Owner org and category for the long tail | **Wikidata** (P856/P31/P127/P749) | CC0 | ✅ when reachable |
+| Domain → hosting AS | DNS A lookups at build time, then the origin-asn table | factual | opt-in `--resolve-dns` (on in published builds) |
+| Cloud provider ranges | AWS / GCP / Azure / Cloudflare / Fastly / Oracle JSON | factual | planned |
+| Owner org and category for the long tail | **Wikidata** (P856/P31/P127/P749) | CC0 | planned (v0.2) |
 | Functional categories, gap fill | UT1 blacklists | CC BY-SA (tagged) | opt-in `--sharealike` |
 | AS relationships and tier-1 clique | **CAIDA as-rel2** | ask first | opt-in `--source caida_asrel` |
-| IXPs and facilities | PeeringDB | ask first | opt-in |
-| Eyeball population per AS | APNIC aspop | ask first | opt-in |
-| Org grouping and third-party categories | DuckDuckGo Tracker Radar | CC BY-NC-SA | opt-in `--allow-noncommercial` |
-| Domain categories and rankings | Cloudflare Radar | CC BY-NC | opt-in `--allow-noncommercial` |
+| IXPs and facilities | PeeringDB | ask first | planned, opt-in |
+| Eyeball population per AS | APNIC aspop | ask first | planned, opt-in |
+| Org grouping and third-party categories | DuckDuckGo Tracker Radar | CC BY-NC-SA | not used (non-commercial) |
+| Domain categories and rankings | Cloudflare Radar | CC BY-NC | not used (non-commercial) |
 
 **Planned clean replacements**, tracked in §10:
 
@@ -239,12 +240,12 @@ Every node carries `pos` and also `az`/`el`/`r`, so clients can rescale freely.
 
 ADD refinement: each level adds nodes and edges on top of the previous levels. Target sizes for the v1 build:
 
-| LOD | Service shell | Network shells | Edges | Delivery |
-|---|---|---|---|---|
-| 0 | 10 realms | 7 continent regions | realm↔region aggregates | one file, a few KB |
-| 1 | about 35 categories | about 60 major networks (tier-1s, hyperscalers, CDNs) | category↔network aggregates, tier-1 peering | one file |
-| 2 | about 500–1,500 orgs | about 1–3k networks | `operates`, `transit`/`peer`, org→network aggregates | one file |
-| 3 | about 10k services | remaining networks (≤ about 10k) | `owns`, `hosted_by`, `transit`/`peer` | **HEALPix order-1 tiles** (48 tiles), by node direction |
+| LOD | Service shell | Network shells | Edges | Delivery | v0.1 build |
+|---|---|---|---|---|---|
+| 0 | 10 realms | 7 continent regions | realm↔region aggregates | one file | 17 nodes, 11 KB |
+| 1 | 38 categories | about 50 major networks (tier-1s, hyperscalers, CDNs, big content) | category↔network aggregates, tier-1 peering | one file | 86 nodes, about 75 KB |
+| 2 | multi-service orgs, all curated services, CrUX top-1k services | 800 most important networks, IXPs | `owns`, `hosted_by`, `operates`, `transit`/`peer`, `member` | one file | about 2k nodes, about 1.2 MB |
+| 3 | the rest of the about 8.4k services | remaining networks | `hosted_by`, `transit` | **HEALPix order-1 tiles** (48 tiles), by node direction | about 9k nodes, 48 tiles |
 
 Each node also carries `size`, a normalised importance from 0 to 1. Clients use it to scale a node and to cull small nodes by angular size.
 
@@ -313,6 +314,19 @@ Minimum scopes are read-only:
 
 ### 9.1 Static snapshot (CDN-friendly)
 
+**Public URL:**
+
+```
+https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public/snapshots/latest.json
+```
+
+The repository is public and the snapshot is committed under `public/`. jsDelivr mirrors it as a CDN:
+
+```
+https://cdn.jsdelivr.net/gh/PRIMITIVE-IO/the-internet-snapshot@main/public/
+```
+
+
 ```
 public/snapshots/latest.json                      ← only mutable file (short TTL)
 public/snapshots/<snapshot_id>/manifest.json      ← immutable from here down
@@ -340,6 +354,9 @@ public/snapshots/<snapshot_id>/asgraph.json        ← compact AS relationship g
 | `GET /v1/connectors` | Personal-overlay connector specs |
 | `POST /v1/overlay/{provider}` | Stateless overlay proxy (§8.3) |
 | `GET /healthz` | Liveness |
+| `GET /viewer/` | Reference web viewer (three.js). A debugging aid that renders the snapshot exactly per the contract. |
+
+**Deployment.** The `Dockerfile` runs this server. With `SNAPSHOT_FETCH_LOOKUPS=1`, it downloads the IP→ASN tables at startup so `whereami` works from the caller's IP. The server is stateless apart from the snapshot files, so any container host works.
 
 ---
 
@@ -354,7 +371,9 @@ fetch ─▶ normalise ─▶ build graph ─▶ hierarchy+weights ─▶ layout
 - `python -m internet_snapshot build` produces `public/snapshots/<id>/` and updates `latest.json`.
 - `python -m internet_snapshot serve` runs the API server.
 
-**Scheduling.** A GitHub Actions workflow with open egress rebuilds weekly and on demand, then commits or publishes the snapshot. Monthly, aligned with the CrUX and CAIDA cadence, is the minimum.
+**Scheduling.** `.github/workflows/build-snapshot.yml` rebuilds the snapshot on GitHub-hosted runners, which have open egress. It runs weekly and on demand, runs the tests, and commits the new `public/snapshots/<id>/`. Old snapshots are pruned to the last 3.
+
+**Repo size.** Committing snapshots to git is the bootstrap hosting. Once snapshots grow past roughly 50 MB, move them to object storage (S3/R2 + CDN) and keep only `latest.json` in git.
 
 ### Roadmap
 
@@ -365,3 +384,19 @@ fetch ─▶ normalise ─▶ build graph ─▶ hierarchy+weights ─▶ layout
 | v0.3 | AS relationships inferred by ourselves from RouteViews (licence-clean); observed-path lookup; OSM submarine cables as backbone arcs |
 | v0.4 | Common Crawl domain-graph affinity edges; HTTP Archive CDN attribution; binary/GLB tile option |
 | v0.5 | More connectors (Microsoft, Slack, Notion, AWS); delta snapshots |
+
+---
+
+## 11. Current build: what is real and what is approximate (v0.1)
+
+| Aspect | v0.1 status |
+|---|---|
+| Service universe | **Real.** CrUX global top-10k origins (8,432 services after folding origins into registrable domains, aliases and regional variants). |
+| Categories | **429 curated services** have hand-assigned categories. About 1,600 long-tail services are keyword- or suffix-classified (`.gov`, `.edu`, "news", …). The remaining about 6,400 are in *General Web*. Wikidata (v0.2) will classify the long tail. |
+| Orgs | Curated: 66 multi-service orgs. A long-tail service is its own org until Wikidata ownership lands. |
+| Hosting (service → AS) | **Real.** About 97% of services are attributed through DNS lookups and the public-domain prefix→AS table, or through the curated org ASNs. |
+| Networks | **Real.** About 2,600 ASes: 150 curated with known roles, plus the largest by announced address space and every AS that hosts a service. Roles for the long tail are guessed from AS names. |
+| AS relationships | **Heuristic** (`relationship_source: heuristic-seed`): a tier-1 mesh, regional transit, and eyeball↔content peering. Routes therefore report `confidence: "low"`. Enabling CAIDA as-rel2 (needs CAIDA's permission for commercial use) switches to inferred BGP relationships. |
+| IXPs | 23 major IXPs at real metro locations. Membership is heuristic until PeeringDB is enabled. |
+| Layout | Deterministic. The same inputs give the same snapshot id. |
+| Overlays | GitHub and Google connectors implemented and tested against mocked APIs. Live OAuth is the client's responsibility. |

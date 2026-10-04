@@ -9,6 +9,16 @@ All coordinates in the snapshot are already in **Unity conventions**: left-hande
 
 ## 1. Loading sequence
 
+**Public base URL**, a static mirror with no server needed for display:
+
+```
+https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public
+```
+
+You can also use the CDN mirror `https://cdn.jsdelivr.net/gh/PRIMITIVE-IO/the-internet-snapshot@main/public`. Routes, `whereami`, search, node details and the overlay proxy need the API server (`/v1`; see the README to run it).
+
+The reference web viewer (`viewer/index.html`, served at `/viewer/`) is a working example of this guide. The only difference is that it maps Unity's left-handed coordinates to three.js with `(x, y, -z)`. Unity needs no conversion.
+
 1. **Read the pointer.** `GET {base}/snapshots/latest.json` gives you the `snapshot_id`. Compare it with the cached id. If it is the same, load everything from the local cache.
 2. **Read the manifest.** `GET {base}/snapshots/{id}/manifest.json` gives you the legend (realms, categories and network roles with colours), the shell radii, the LOD table and the attribution.
 3. **Load LOD 0 and LOD 1 immediately.** Both are small. Together they give the whole sky:
@@ -116,7 +126,7 @@ Overlay node ids start with `ov:`. They never collide with snapshot ids.
 - **Gaze or point at a node:** show the label and call `GET /v1/node/{id}` for details, neighbours and children.
 - **Select a realm or category:** fade everything else and load that sector's LOD-3 tiles first.
 - **Select a service:** draw its `hosted_by` edges to the edge shell and the route from home (`/v1/route`).
-- **Search:** use `search.json`, or `GET /v1/search?q=`.
+- **Search:** use `search.json`, or `GET /v1/search?q=`. To map a hostname the user visits, for example a page in a Primitive browser panel, to its node, use `domains.json`. It covers aliases such as `mail.google.com` → `svc:gmail.com`.
 
 ## 7. Attribution
 

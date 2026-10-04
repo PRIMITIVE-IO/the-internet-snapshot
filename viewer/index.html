@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Internet Snapshot Viewer</title>
+<style>
+  :root { --bg: #05070c; --fg: #e8ecf3; --muted: #8a94a6; --panel: rgba(12,16,26,.86); --accent: #64ffda; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 13px/1.4 system-ui, sans-serif; overflow: hidden; }
+  #ui { position: absolute; top: 12px; left: 12px; width: 300px; max-width: calc(100vw - 24px); background: var(--panel);
+        border: 1px solid #1f2a3d; border-radius: 10px; padding: 12px; box-sizing: border-box; }
+  #ui h1 { font-size: 14px; margin: 0 0 6px; }
+  #ui .muted { color: var(--muted); font-size: 12px; }
+  #ui label { display: inline-flex; gap: 4px; margin: 2px 8px 2px 0; align-items: center; }
+  #ui input[type=text] { width: 100%; box-sizing: border-box; background: #0b1220; color: var(--fg); border: 1px solid #263248;
+        border-radius: 6px; padding: 6px 8px; margin-top: 6px; }
+  #ui button { background: #12304a; color: var(--fg); border: 1px solid #24507a; border-radius: 6px; padding: 5px 10px; margin-top: 6px; cursor: pointer; }
+  #info { margin-top: 8px; min-height: 2.8em; white-space: pre-wrap; }
+  #tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid #263248; border-radius: 6px;
+         padding: 4px 8px; display: none; font-size: 12px; }
+  #credits { position: absolute; bottom: 6px; left: 12px; right: 12px; color: var(--muted); font-size: 10px; }
+  .lbl { position: absolute; pointer-events: none; transform: translate(-50%, -50%); white-space: nowrap; text-shadow: 0 0 4px #000; }
+  .lbl.realm { font-size: 15px; font-weight: 600; } .lbl.cat { font-size: 11px; opacity: .8; } .lbl.region { font-size: 11px; color: #cfd8dc; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+<div id="ui">
+  <h1>The Internet Snapshot</h1>
+  <div class="muted" id="sid">loading…</div>
+  <div style="margin-top:6px">
+    LOD: <label><input type="checkbox" data-lod="0" checked>0</label><label><input type="checkbox" data-lod="1" checked>1</label>
+    <label><input type="checkbox" data-lod="2" checked>2</label><label><input type="checkbox" data-lod="3">3</label>
+  </div>
+  <div>
+    <label><input type="checkbox" id="edges" checked>edges</label><label><input type="checkbox" id="labels" checked>labels</label>
+  </div>
+  <input type="text" id="to" placeholder="route to… (e.g. gmail.com)">
+  <input type="text" id="asn" placeholder="home ASN (blank = detect from IP)">
+  <button id="go">Trace route</button>
+  <div id="info" class="muted">Drag to look around · wheel to zoom (FOV) · click a node</div>
+</div>
+<div id="tip"></div>
+<div id="credits"></div>
+<script type="module">
+import * as THREE from "three";
+
+const params = new URLSearchParams(location.search);
+const BASE = params.get("base") || new URL("../v1/", location.href).href;   // any static mirror of public/ works
+const toThree = p => new THREE.Vector3(p[0], p[1], -p[2]);                  // Unity (left-handed) -> three.js
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, 1, 1, 5000);
+let yaw = 0, pitch = 0;
+function resize() { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+addEventListener("resize", resize); resize();
+
+const groups = {}; const nodeIndex = new Map(); const pickables = [];
+const labelLayer = document.createElement("div"); document.body.appendChild(labelLayer);
+const labels = [];
+
+function sprite() {
+  const c = document.createElement("canvas"); c.width = c.height = 64;
+  const g = c.getContext("2d"); const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grd.addColorStop(0, "rgba(255,255,255,1)"); grd.addColorStop(.35, "rgba(255,255,255,.9)"); grd.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = grd; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c);
+}
+const tex = sprite();
+const pointMat = new THREE.ShaderMaterial({
+  uniforms: { map: { value: tex }, scale: { value: 1 } }, transparent: true, depthWrite: false,
+  vertexShader: `attribute float size; attribute vec3 color; varying vec3 vColor;
+    uniform float scale; void main(){ vColor = color; vec4 mv = modelViewMatrix * vec4(position,1.0);
+    gl_PointSize = size * scale; gl_Position = projectionMatrix * mv; }`,
+  fragmentShader: `uniform sampler2D map; varying vec3 vColor; void main(){ vec4 t = texture2D(map, gl_PointCoord);
+    if (t.a < .05) discard; gl_FragColor = vec4(vColor, t.a); }`,
+});
+
+function arc(a, b, n = 24) {
+  const A = toThree(a), B = toThree(b), ra = A.length(), rb = B.length();
+  if (ra < 1e-3 || rb < 1e-3) return [A, B];
+  const ua = A.clone().normalize(), ub = B.clone().normalize();
+  const ang = ua.angleTo(ub), bulge = 0.08 * ang / Math.PI * Math.min(ra, rb), pts = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n; let d;
+    if (ang < 1e-4) d = ua.clone(); else {
+      const s = Math.sin(ang); d = ua.clone().multiplyScalar(Math.sin((1 - t) * ang) / s).add(ub.clone().multiplyScalar(Math.sin(t * ang) / s));
+    }
+    pts.push(d.multiplyScalar(ra + (rb - ra) * t - bulge * Math.sin(Math.PI * t)));
+  }
+  return pts;
+}
+const EDGE_COLORS = { transit: 0xffb300, peer: 0x4dd0e1, hosted_by: 0x7986cb, owns: 0xffffff, operates: 0xba68c8, member: 0x90a4ae, aggregate: 0x9e9e9e };
+
+function addLevel(level, doc) {
+  const g = groups[level] || (groups[level] = { pts: new THREE.Group(), edges: new THREE.Group() });
+  scene.add(g.pts); scene.add(g.edges);
+  const pos = [], col = [], size = [];
+  for (const n of doc.nodes) {
+    nodeIndex.set(n.id, n); const v = toThree(n.pos); pos.push(v.x, v.y, v.z);
+    const c = new THREE.Color(n.color || "#90a4ae"); col.push(c.r, c.g, c.b);
+    size.push((n.kind === "realm" || n.kind === "region" ? 14 : n.kind === "category" ? 10 : 3) + 9 * (n.size || .2));
+    if (n.kind === "realm" || n.kind === "category" || n.kind === "region") {
+      const el = document.createElement("div"); el.className = "lbl " + (n.kind === "category" ? "cat" : n.kind);
+      el.textContent = n.label; el.style.color = n.color || "#fff"; labelLayer.appendChild(el); labels.push({ el, v, level });
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  geo.setAttribute("size", new THREE.Float32BufferAttribute(size, 1));
+  const pts = new THREE.Points(geo, pointMat); pts.userData.nodes = doc.nodes; g.pts.add(pts); pickables.push(pts);
+  const byKind = {};
+  for (const e of doc.edges) (byKind[e.kind] ||= []).push(e);
+  for (const [kind, es] of Object.entries(byKind)) {
+    const verts = [];
+    for (const e of es) { const p = arc(e.a, e.b, kind === "aggregate" ? 32 : 12); for (let i = 0; i < p.length - 1; i++) verts.push(p[i].x, p[i].y, p[i].z, p[i+1].x, p[i+1].y, p[i+1].z); }
+    const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+    const op = kind === "aggregate" ? .35 : kind === "peer" ? .05 : kind === "transit" ? .08 : .12;
+    g.edges.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: EDGE_COLORS[kind] || 0x888888, transparent: true, opacity: op })));
+  }
+  applyToggles();
+}
+
+let manifest, snapshotBase;
+async function load() {
+  const latest = await (await fetch(BASE + "snapshots/latest.json")).json();
+  snapshotBase = BASE + "snapshots/" + latest.snapshot_id + "/";
+  manifest = await (await fetch(BASE + "snapshots/" + latest.manifest)).json();
+  document.getElementById("sid").textContent = `${manifest.snapshot_id} · ${manifest.stats.nodes.toLocaleString()} nodes · ${manifest.stats.edges.toLocaleString()} edges`;
+  document.getElementById("credits").textContent = "Data: " + manifest.attribution;
+  for (const lm of manifest.lods.filter(l => l.file)) addLevel(lm.level, await (await fetch(snapshotBase + lm.file)).json());
+}
+let lod3Loaded = false;
+async function loadLod3() {
+  if (lod3Loaded) return; lod3Loaded = true;
+  const lm = manifest.lods.find(l => l.tiling);
+  await Promise.all(lm.tiles.map(async t => addLevel(3, await (await fetch(snapshotBase + lm.tiling.path.replace("{order}", lm.tiling.order).replace("{ipix}", t.ipix))).json())));
+}
+function applyToggles() {
+  const showEdges = document.getElementById("edges").checked;
+  document.querySelectorAll("[data-lod]").forEach(cb => {
+    const g = groups[cb.dataset.lod]; if (!g) return; g.pts.visible = cb.checked; g.edges.visible = cb.checked && showEdges;
+  });
+}
+document.querySelectorAll("[data-lod]").forEach(cb => cb.addEventListener("change", () => { if (cb.dataset.lod === "3" && cb.checked) loadLod3(); applyToggles(); }));
+document.getElementById("edges").addEventListener("change", applyToggles);
+
+// look-around controls: the viewer stays at the origin (home network)
+let drag = null;
+renderer.domElement.addEventListener("pointerdown", e => drag = { x: e.clientX, y: e.clientY, yaw, pitch, moved: false });
+addEventListener("pointerup", e => { if (drag && !drag.moved) pick(e); drag = null; });
+addEventListener("pointermove", e => {
+  if (drag) { const k = camera.fov / innerHeight * Math.PI / 180; yaw = drag.yaw + (e.clientX - drag.x) * k; pitch = Math.max(-1.55, Math.min(1.55, drag.pitch + (e.clientY - drag.y) * k));
+    if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 4) drag.moved = true; }
+});
+renderer.domElement.addEventListener("wheel", e => { camera.fov = Math.max(8, Math.min(100, camera.fov * (1 + e.deltaY * 0.001))); camera.updateProjectionMatrix(); }, { passive: true });
+
+const ray = new THREE.Raycaster(); ray.params.Points.threshold = 6;
+function pick(e) {
+  const m = new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -e.clientY / innerHeight * 2 + 1);
+  ray.setFromCamera(m, camera); ray.params.Points.threshold = 6 * camera.fov / 75;
+  const hits = ray.intersectObjects(pickables.filter(p => p.parent.visible), false);
+  if (!hits.length) return;
+  const n = hits[0].object.userData.nodes[hits[0].index];
+  document.getElementById("info").textContent = `${n.label}\n${n.kind}${n.role ? " · " + n.role : ""}${n.category ? " · " + n.category : ""}${n.asn ? " · AS" + n.asn : ""}${n.domain ? " · " + n.domain : ""}`;
+  document.getElementById("to").value = n.domain || n.id;
+}
+
+let routeGroup = null;
+document.getElementById("go").addEventListener("click", async () => {
+  const to = document.getElementById("to").value.trim(); if (!to) return;
+  const asn = document.getElementById("asn").value.trim();
+  const r = await fetch(BASE + "route?to=" + encodeURIComponent(to) + (asn ? "&asn=" + encodeURIComponent(asn) : ""));
+  const d = await r.json(); const info = document.getElementById("info");
+  if (!r.ok) { info.textContent = d.detail || "route failed"; return; }
+  if (routeGroup) scene.remove(routeGroup); routeGroup = new THREE.Group(); scene.add(routeGroup);
+  const RC = { up: 0xffb300, peer: 0x4dd0e1, down: 0x81c784, served: 0xffffff, origin: 0xffffff, sibling: 0xba68c8 };
+  for (let i = 1; i < d.hops.length; i++) {
+    const a = d.hops[i - 1].pos, b = d.hops[i].pos; if (!a || !b) continue;
+    const g = new THREE.BufferGeometry().setFromPoints(arc(a, b, 48));
+    routeGroup.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: RC[d.hops[i].rel] || 0xffffff })));
+  }
+  info.textContent = `${d.method} · confidence ${d.confidence}\n` + d.hops.map(h => `${h.label}${h.rel && h.rel !== "origin" ? " (" + h.rel + ")" : ""}`).join(" → ");
+});
+
+function frame() {
+  camera.position.set(0, 0, 0);
+  camera.lookAt(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
+  pointMat.uniforms.scale.value = 75 / camera.fov;
+  renderer.render(scene, camera);
+  const showLabels = document.getElementById("labels").checked;
+  for (const l of labels) {
+    const g = groups[l.level]; const vis = showLabels && g && g.pts.visible;
+    const p = l.v.clone().project(camera);
+    if (!vis || p.z > 1 || Math.abs(p.x) > 1.1 || Math.abs(p.y) > 1.1) { l.el.style.display = "none"; continue; }
+    l.el.style.display = ""; l.el.style.left = ((p.x + 1) / 2 * innerWidth) + "px"; l.el.style.top = ((1 - p.y) / 2 * innerHeight) + "px";
+  }
+  requestAnimationFrame(frame);
+}
+load().catch(e => document.getElementById("sid").textContent = "failed to load: " + e);
+frame();
+</script>
+</body>
+</html>

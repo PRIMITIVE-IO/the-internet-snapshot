@@ -176,6 +176,12 @@ def write_snapshot(cat: Catalog, seed_taxonomy: dict, layout_meta: dict, out_roo
                          for n in nodes.values() if n["kind"] == "org" and n.get("_asns")},
     }
     files["asgraph.json"] = _dump(asgraph)
+    domains = {}
+    for n in sorted(nodes.values(), key=lambda n: n["id"]):
+        if n["kind"] == "service":
+            for d in [n["domain"], *n.get("_aliases", [])]:
+                domains.setdefault(d, n["id"])
+    files["domains.json"] = _dump(dict(sorted(domains.items())))
     search = sorted(([n["id"], n["label"], n["domain"], n["lod"]] for n in nodes.values()), key=lambda r: r[0])
     files["search.json"] = _dump(search)
 
@@ -216,7 +222,8 @@ def write_snapshot(cat: Catalog, seed_taxonomy: dict, layout_meta: dict, out_roo
         "realms": taxonomy_realms,
         "categories": taxonomy_cats,
         "network_roles": seed_taxonomy["network_roles"],
-        "files": {"anchors": "anchors.json", "asgraph": "asgraph.json", "search": "search.json"},
+        "files": {"anchors": "anchors.json", "asgraph": "asgraph.json", "search": "search.json",
+                  "domains": "domains.json"},
         "stats": {"nodes": len(nodes), "edges": len(edges), **{f"{k}s": v for k, v in sorted(kinds.items())},
                   "relationship_source": cat.relationship_source},
         "sources": cat.sources,

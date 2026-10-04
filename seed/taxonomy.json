@@ -1,5 +1,5 @@
 {
-  "_comment": "Functional taxonomy for the service shell. Realm order is the order realms are seeded around the sphere: neighbours in this list end up adjacent. 'anchor' is the [azimuth, elevation] (degrees, Unity convention) where the realm's sector is grown from; az=0, el=0 is straight ahead of the viewer.",
+  "_comment": "Functional taxonomy for the service shell. 'anchor' is the [azimuth, elevation] (degrees, Unity convention) where the realm's sector is grown from; az=0, el=0 is straight ahead of the viewer.",
   "realms": [
     {"slug": "knowledge",     "label": "Knowledge & Discovery",   "color": "#AED581", "anchor": [-40, 30], "categories": [
       {"slug": "search",      "label": "Search"},

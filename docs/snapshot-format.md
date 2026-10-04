@@ -18,7 +18,11 @@ GET {base}/snapshots/latest.json
 `{base}` is either of:
 
 - the API server's `/v1` prefix, for example `https://<host>/v1`;
-- any static mirror of `public/` (for example GitHub raw `…/main/public`).
+- any static mirror of `public/`. The canonical public mirror is
+  **`https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public`**. The
+  jsDelivr CDN mirror `https://cdn.jsdelivr.net/gh/PRIMITIVE-IO/the-internet-snapshot@main/public` also works.
+
+Static mirrors serve every file. The query endpoints (`/v1/route`, `/v1/whereami`, `/v1/search`, `/v1/node`, `/v1/overlay`) need the API server.
 
 ```json
 {
@@ -81,10 +85,12 @@ Service nodes sit at r ≈ 985 and orgs at r = 1000. This gives a little paralla
   "realms":     [ { "id": "realm:communication", "label": "Communication", "color": "#4FC3F7" } ],
   "categories": [ { "id": "cat:email", "label": "Email", "realm": "realm:communication", "color": "#4FC3F7" } ],
   "network_roles": [ { "id": "tier1", "label": "Tier-1 transit", "color": "#FFD54F" } ],
-  "files": { "anchors": "anchors.json", "asgraph": "asgraph.json", "search": "search.json" },
+  "files": { "anchors": "anchors.json", "asgraph": "asgraph.json", "search": "search.json",
+             "domains": "domains.json" },
   "stats": { "nodes": 13512, "edges": 40211, "services": 10000, "networks": 3000 },
   "sources": [ { "id": "crux", "name": "Chrome UX Report top lists", "license": "CC BY 4.0",
                  "license_class": "open", "url": "…", "retrieved_at": "…" } ],
+  "notes": [ "AS relationships are heuristic (seed roles + geography); …" ],   // build caveats, show in a debug panel
   "attribution": "Contains data from … (CC BY 4.0) …"
 }
 ```
@@ -119,7 +125,7 @@ Every node object has the same keys. Keys that do not apply are `null`.
 
 ```jsonc
 {
-  "id": "svc:gmail.com",          // stable across snapshots
+  "id": "svc:gmail.com",          // stable across snapshots (svc:<registrable domain or product hostname>)
   "kind": "service",              // realm | category | org | service | region | network | ixp
   "label": "Gmail",
   "lod": 3,
@@ -193,9 +199,24 @@ How `parent` chains:
 {
   "nodes": { "3356": { "id": "as:3356", "pos": [..], "role": "tier1", "country": "US" } },
   "rels":  [ [3356, 7922, -1], [3356, 174, 0] ],  // [a, b, -1] = a provider of b; 0 = peers
-  "tier1": [174, 701, 1299, 2914, 3257, 3320, 3356, 3491, 5511, 6453, 6461, 6762, 6830, 7018, 12956]
+  "tier1": [174, 701, 1299, 2914, 3257, 3320, 3356, 3491, 5511, 6453, 6461, 6762, 6830, 7018, 12956],
+  "relationship_source": "heuristic-seed",          // or "caida-as-rel2"
+  "hosting": { "svc:gmail.com": ["as:15169"] },     // service -> serving networks
+  "org_networks": { "org:google": ["as:15169", "as:396982"] }
 }
 ```
+
+With the same propagation rules as the server (`internet_snapshot/routing.py`), a client can compute routes offline from `asgraph.json`.
+
+In heuristic builds, guessed peerings exist only in `asgraph.json`; they are not drawn as `peer` edges. The tier-1 mesh is the exception. Edges inferred from CAIDA are all drawn.
+
+**`domains.json`** maps every hostname/domain folded into a service (aliases and regional variants) to its node:
+
+```json
+{ "mail.google.com": "svc:gmail.com", "amazon.co.uk": "svc:amazon.com", "youtu.be": "svc:youtube.com" }
+```
+
+To resolve an arbitrary hostname, walk up its labels (`a.b.example.com` → `b.example.com` → `example.com`) until one matches.
 
 **`search.json`** is an index of every node, for search UIs:
 
@@ -231,6 +252,7 @@ If neither `asn` nor `ip` is given, the server uses the caller's public IP.
   "to":   { "query": "gmail.com", "node": "svc:gmail.com", "network": "as:15169", "pos": [..] },
   "method": "valley-free",        // observed | valley-free | fallback
   "confidence": "medium",         // high | medium | low
+  "relationship_source": "heuristic-seed",
   "as_path": [7922, 3356, 15169],
   "hops": [
     { "seq": 0, "node": "home",          "kind": "home",    "label": "Home network", "pos": [0,0,0], "rel": null },
@@ -295,6 +317,7 @@ The same shape applies whether the overlay comes from the proxy or is built clie
   "snapshot_id": "20261004-3f9c2a1b",
   "provider": "github",
   "account": { "id": "ov:github:583231", "label": "octocat" },
+  "warnings": [ "orgs: HTTP 403 (needs read:org)" ],     // partial results are still returned
   "nodes": [
     { "id": "ov:github:583231", "kind": "account", "label": "octocat", "parent": "svc:github.com",
       "anchor": "svc:github.com", "pos": [..], "r": .., "az": .., "el": .., "size": 0.5, "color": "#FFFFFF",

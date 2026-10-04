@@ -391,17 +391,21 @@ def build_catalog(seed: Seed, opts: BuildOptions) -> Catalog:
         cat.relationship_source = "heuristic-seed"
         cat.notes.append("AS relationships are heuristic (seed roles + geography); enable CAIDA as-rel2 for "
                          "inferred BGP relationships")
+    tier1_set = set(cat.tier1)
+    heuristic = cat.relationship_source.startswith("heuristic")
     for a, b, rel in cat.rels:
+        # Guessed peerings stay in the routing graph (asgraph.json) but are not drawn, except the
+        # well-established tier-1 mesh; inferred (CAIDA) relationships are all drawn.
+        if heuristic and rel == 0 and not (a in tier1_set and b in tier1_set):
+            continue
         cat.edge(f"as:{a}", f"as:{b}", "transit" if rel == -1 else "peer", 0.5 if rel == -1 else 0.4)
 
-    # ---- IXP membership (heuristic until PeeringDB is enabled) ----
+    # ---- IXP membership (heuristic until PeeringDB is enabled: carriers in their region, ISPs in-country) ----
     ixps = cat.of_kind("ixp")
     for n in cat.of_kind("network"):
         if not n["_seed"]:
             continue
-        if n["role"] in ("content", "cdn", "cloud"):
-            members = ixps
-        elif n["role"] in ("tier1", "transit"):
+        if n["role"] in ("tier1", "transit"):
             members = [x for x in ixps if x["region"] == n["region"]]
         elif n["role"] == "access":
             members = [x for x in ixps if x["country"] == n["country"]]
