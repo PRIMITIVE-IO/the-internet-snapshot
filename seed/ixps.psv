@@ -1,0 +1,26 @@
+# Major internet exchange points (backbone shell). Locations are metro coordinates.
+# PeeringDB (opt-in) replaces and extends this list with real membership.
+# slug | label | city | country | lat | lon
+de-cix-frankfurt | DE-CIX Frankfurt   | Frankfurt     | DE | 50.11  | 8.68
+ams-ix           | AMS-IX             | Amsterdam     | NL | 52.37  | 4.90
+linx-lon1        | LINX LON1          | London        | GB | 51.51  | -0.13
+france-ix        | France-IX Paris    | Paris         | FR | 48.86  | 2.35
+netnod           | Netnod             | Stockholm     | SE | 59.33  | 18.07
+msk-ix           | MSK-IX             | Moscow        | RU | 55.76  | 37.62
+equinix-ashburn  | Equinix Ashburn    | Ashburn       | US | 39.04  | -77.49
+nyiix            | NYIIX              | New York      | US | 40.71  | -74.01
+equinix-chicago  | Equinix Chicago    | Chicago       | US | 41.88  | -87.63
+six-seattle      | Seattle IX         | Seattle       | US | 47.61  | -122.33
+equinix-sanjose  | Equinix San Jose   | San Jose      | US | 37.34  | -121.89
+any2-la          | Any2 Los Angeles   | Los Angeles   | US | 34.05  | -118.24
+torix            | TorIX              | Toronto       | CA | 43.65  | -79.38
+ix-br-sp         | IX.br São Paulo    | São Paulo     | BR | -23.55 | -46.63
+jpnap-tokyo      | JPNAP Tokyo        | Tokyo         | JP | 35.68  | 139.69
+hkix             | HKIX               | Hong Kong     | HK | 22.32  | 114.17
+equinix-singapore| Equinix Singapore  | Singapore     | SG | 1.35   | 103.82
+kinx             | KINX               | Seoul         | KR | 37.57  | 126.98
+nixi-mumbai      | NIXI Mumbai        | Mumbai        | IN | 19.08  | 72.88
+uae-ix           | UAE-IX             | Dubai         | AE | 25.20  | 55.27
+napafrica-jnb    | NAPAfrica Johannesburg | Johannesburg | ZA | -26.20 | 28.05
+ixpn-lagos       | IXPN Lagos         | Lagos         | NG | 6.52   | 3.38
+ix-australia-syd | IX Australia Sydney| Sydney        | AU | -33.87 | 151.21

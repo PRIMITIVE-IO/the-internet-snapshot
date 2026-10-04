@@ -1,0 +1,440 @@
+# Curated service catalogue: the high-abstraction skeleton of the service shell.
+# Each line is one service. The long tail comes from CrUX and is attached beneath this catalogue.
+# Columns:
+#   domain   - registrable domain, or a hostname for products on a subdomain
+#   label
+#   category - slug from taxonomy.json
+#   org      - slug; orgs not in orgs.psv are created automatically
+#   aliases  - comma-separated extra domains folded into this service
+#   icon     - simple-icons slug
+#   hosted   - comma-separated ASNs serving it; default = the org's ASNs, else DNS
+# domain | label | category | org | aliases | icon | hosted
+google.com            | Google Search      | search       | google    | google.de,google.co.uk,google.co.jp,google.fr,google.com.br,google.co.in,google.it,google.es,google.ca,google.com.mx,google.ru,google.com.tr,google.co.id,google.pl,google.com.au,google.nl,google.co.kr | google |
+youtube.com           | YouTube            | video        | google    | youtu.be,ytimg.com,googlevideo.com | youtube | 15169,36040
+gmail.com             | Gmail              | email        | google    | mail.google.com | gmail |
+drive.google.com      | Google Drive       | storage      | google    |               | googledrive |
+docs.google.com       | Google Docs        | productivity | google    |               | googledocs |
+calendar.google.com   | Google Calendar    | productivity | google    |               | googlecalendar |
+maps.google.com       | Google Maps        | maps         | google    |               | googlemaps |
+meet.google.com       | Google Meet        | video-calls  | google    |               | googlemeet |
+play.google.com       | Google Play        | shopping     | google    |               | googleplay |
+news.google.com       | Google News        | news         | google    |               | googlenews |
+translate.google.com  | Google Translate   | reference    | google    |               | googletranslate |
+photos.google.com     | Google Photos      | storage      | google    |               | googlephotos |
+scholar.google.com    | Google Scholar     | reference    | google    |               | googlescholar |
+gemini.google.com     | Gemini             | ai           | google    |               | googlegemini |
+cloud.google.com      | Google Cloud       | cloud        | google    | googleusercontent.com,appspot.com,run.app | googlecloud | 396982,15169
+googleapis.com        | Google APIs        | apis         | google    |               | google |
+firebase.google.com   | Firebase           | apis         | google    | firebaseio.com,firebaseapp.com,web.app | firebase |
+accounts.google.com   | Google Accounts    | identity     | google    |               | google |
+doubleclick.net       | Google Ad Manager  | ads          | google    | googlesyndication.com,googleadservices.com,googleads.g.doubleclick.net | googleads |
+google-analytics.com  | Google Analytics   | analytics    | google    | googletagmanager.com,analytics.google.com | googleanalytics |
+gstatic.com           | Google Static      | cdn          | google    |               | google |
+android.com           | Android            | devtools     | google    | developer.android.com | android |
+go.dev                | Go                 | devtools     | google    | golang.org    | go |
+kaggle.com            | Kaggle             | ai           | google    |               | kaggle |
+colab.research.google.com | Colab          | ai           | google    |               | googlecolab |
+blogger.com           | Blogger            | news         | google    | blogspot.com  | blogger |
+waze.com              | Waze               | maps         | google    |               | waze |
+fitbit.com            | Fitbit             | health       | google    |               | fitbit |
+music.youtube.com     | YouTube Music      | music        | google    |               | youtubemusic |
+facebook.com          | Facebook           | social       | meta      | fb.com,fbcdn.net,fb.me,facebook.net | facebook |
+instagram.com         | Instagram          | social       | meta      | cdninstagram.com | instagram |
+whatsapp.com          | WhatsApp           | messaging    | meta      | whatsapp.net,wa.me | whatsapp |
+messenger.com         | Messenger          | messaging    | meta      |               | messenger |
+threads.net           | Threads            | social       | meta      | threads.com   | threads |
+meta.ai               | Meta AI            | ai           | meta      |               | meta |
+oculus.com            | Meta Quest         | gaming       | meta      | meta.com      | meta |
+microsoft.com         | Microsoft          | productivity | microsoft | windows.com,windowsupdate.com,microsoftstore.com | microsoft |
+office.com            | Microsoft 365      | productivity | microsoft | microsoft365.com,office365.com,office.net,sharepoint.com | microsoftoffice |
+outlook.com           | Outlook            | email        | microsoft | live.com,hotmail.com,outlook.live.com | microsoftoutlook |
+teams.microsoft.com   | Microsoft Teams    | collaboration| microsoft | teams.live.com | microsoftteams |
+onedrive.live.com     | OneDrive           | storage      | microsoft | onedrive.com  | microsoftonedrive |
+bing.com              | Bing               | search       | microsoft |               | microsoftbing | 8068,8075
+msn.com               | MSN                | news         | microsoft |               | |
+linkedin.com          | LinkedIn           | social       | microsoft | licdn.com     | linkedin | 14413
+github.com            | GitHub             | code         | microsoft | githubusercontent.com,github.io,githubassets.com,ghcr.io | github | 36459
+azure.com             | Microsoft Azure    | cloud        | microsoft | azure.microsoft.com,azurewebsites.net,windows.net,azureedge.net,cloudapp.net | microsoftazure | 8075
+microsoftonline.com   | Microsoft Entra ID | identity     | microsoft | login.microsoftonline.com,msauth.net | microsoft |
+copilot.microsoft.com | Microsoft Copilot  | ai           | microsoft |               | |
+xbox.com              | Xbox               | gaming       | microsoft | xboxlive.com  | xbox |
+minecraft.net         | Minecraft          | gaming       | microsoft |               | minecraft |
+blizzard.com          | Battle.net         | gaming       | microsoft | battle.net    | battledotnet |
+npmjs.com             | npm                | devtools     | microsoft | npmjs.org     | npm | 13335
+visualstudio.com      | Visual Studio      | devtools     | microsoft | code.visualstudio.com,vscode.dev | visualstudiocode |
+nuget.org             | NuGet              | devtools     | microsoft |               | nuget |
+clarity.ms            | Microsoft Clarity  | analytics    | microsoft |               | |
+amazon.com            | Amazon             | shopping     | amazon    | amazon.de,amazon.co.uk,amazon.co.jp,amazon.in,amazon.fr,amazon.it,amazon.es,amazon.ca,amazon.com.br,amazon.com.mx,amazon.com.au,media-amazon.com,ssl-images-amazon.com | amazon |
+aws.amazon.com        | Amazon Web Services| cloud        | amazon    | amazonaws.com,awsstatic.com,aws.com | amazonwebservices |
+cloudfront.net        | Amazon CloudFront  | cdn          | amazon    |               | amazonwebservices | 16509
+primevideo.com        | Prime Video        | video        | amazon    | aiv-cdn.net   | primevideo |
+twitch.tv             | Twitch             | video        | amazon    | ttvnw.net,jtvnw.net | twitch | 46489
+audible.com           | Audible            | music        | amazon    |               | audible |
+imdb.com              | IMDb               | reference    | amazon    |               | imdb |
+amazon-adsystem.com   | Amazon Ads         | ads          | amazon    |               | amazon |
+apple.com             | Apple              | shopping     | apple     | cdn-apple.com,mzstatic.com | apple |
+icloud.com            | iCloud             | storage      | apple     | icloud-content.com,me.com | icloud |
+music.apple.com       | Apple Music        | music        | apple     |               | applemusic |
+tv.apple.com          | Apple TV+          | video        | apple     |               | appletv |
+apps.apple.com        | App Store          | shopping     | apple     | itunes.apple.com | appstore |
+developer.apple.com   | Apple Developer    | devtools     | apple     |               | apple |
+netflix.com           | Netflix            | video        | netflix   | nflxvideo.net,nflximg.net,nflxext.com,nflxso.net | netflix |
+disneyplus.com        | Disney+            | video        | disney    | disney-plus.net,bamgrid.com | |
+hulu.com              | Hulu               | video        | disney    |               | hulu |
+espn.com              | ESPN               | news         | disney    |               | espn |
+disney.com            | Disney             | video        | disney    | go.com        | |
+max.com               | HBO Max            | video        | wbd       | hbomax.com    | hbomax |
+cnn.com               | CNN                | news         | wbd       |               | cnn |
+paramountplus.com     | Paramount+         | video        | paramount |               | paramountplus |
+peacocktv.com         | Peacock            | video        | comcast   |               | |
+nbcnews.com           | NBC News           | news         | comcast   |               | nbc |
+spotify.com           | Spotify            | music        | spotify   | scdn.co,spotifycdn.com | spotify |
+soundcloud.com        | SoundCloud         | music        | soundcloud|               | soundcloud |
+deezer.com            | Deezer             | music        | deezer    |               | deezer |
+pandora.com           | Pandora            | music        | siriusxm  |               | pandora |
+tidal.com             | TIDAL              | music        | tidal     |               | tidal |
+tiktok.com            | TikTok             | social       | bytedance | tiktokcdn.com,tiktokv.com,byteoversea.com,tiktokcdn-us.com | tiktok |
+capcut.com            | CapCut             | design       | bytedance |               | capcut |
+douyin.com            | Douyin             | social       | bytedance |               | tiktok |
+toutiao.com           | Toutiao            | news         | bytedance |               | |
+qq.com                | QQ                 | messaging    | tencent   | gtimg.com,qpic.cn | tencentqq |
+weixin.qq.com         | WeChat             | messaging    | tencent   | wechat.com    | wechat |
+cloud.tencent.com     | Tencent Cloud      | cloud        | tencent   | tencentcloud.com | |
+riotgames.com         | Riot Games         | gaming       | riotgames | leagueoflegends.com,valorant.com | riotgames |
+bilibili.com          | Bilibili           | video        | bilibili  | hdslb.com,bilivideo.com | bilibili |
+taobao.com            | Taobao             | shopping     | alibaba   | alicdn.com    | |
+tmall.com             | Tmall              | shopping     | alibaba   |               | |
+aliexpress.com        | AliExpress         | shopping     | alibaba   | aliexpress.us | aliexpress |
+alibaba.com           | Alibaba.com        | shopping     | alibaba   |               | alibabadotcom |
+alibabacloud.com      | Alibaba Cloud      | cloud        | alibaba   | aliyun.com,aliyuncs.com | alibabacloud | 45102
+youku.com             | Youku              | video        | alibaba   |               | |
+alipay.com            | Alipay             | payments     | antgroup  |               | alipay |
+baidu.com             | Baidu              | search       | baidu     | bdstatic.com,bcebos.com | baidu |
+jd.com                | JD.com             | shopping     | jd        | 360buyimg.com | |
+temu.com              | Temu               | shopping     | pdd       |               | temu |
+pinduoduo.com         | Pinduoduo          | shopping     | pdd       | yangkeduo.com | |
+shein.com             | SHEIN              | shopping     | shein     |               | shein |
+yandex.ru             | Yandex             | search       | yandex    | yandex.com,ya.ru,yandex.net,yastatic.net | |
+vk.com                | VK                 | social       | vk        | userapi.com,vk.ru | vk |
+mail.ru               | Mail.ru            | email        | vk        |               | maildotru |
+ok.ru                 | Odnoklassniki      | social       | vk        |               | odnoklassniki |
+naver.com             | Naver              | search       | naver     | pstatic.net   | naver |
+kakao.com             | KakaoTalk          | messaging    | kakao     | daum.net,kakaocdn.net | kakaotalk |
+yahoo.co.jp           | Yahoo! JAPAN       | search       | lycorp    | yimg.jp       | |
+line.me               | LINE               | messaging    | lycorp    | line-scdn.net | line |
+yahoo.com             | Yahoo              | news         | yahoo     | yimg.com      | yahoo |
+mail.yahoo.com        | Yahoo Mail         | email        | yahoo     |               | yahoo |
+aol.com               | AOL                | email        | yahoo     |               | aol |
+x.com                 | X                  | social       | xcorp     | twitter.com,twimg.com,t.co | x |
+grok.com              | Grok               | ai           | xai       | x.ai          | |
+reddit.com            | Reddit             | forums       | reddit    | redd.it,redditmedia.com,redditstatic.com | reddit | 54113
+pinterest.com         | Pinterest          | social       | pinterest | pinimg.com    | pinterest |
+snapchat.com          | Snapchat           | social       | snap      | sc-cdn.net,snap.com | snapchat |
+discord.com           | Discord            | messaging    | discord   | discord.gg,discordapp.com,discordapp.net | discord |
+telegram.org          | Telegram           | messaging    | telegram  | t.me,telegram.me | telegram |
+signal.org            | Signal             | messaging    | signal    |               | signal |
+viber.com             | Viber              | messaging    | rakuten   |               | viber |
+quora.com             | Quora              | forums       | quora     |               | quora |
+poe.com               | Poe                | ai           | quora     |               | poe |
+tumblr.com            | Tumblr             | social       | automattic|               | tumblr |
+wordpress.com         | WordPress.com      | news         | automattic| wp.com        | wordpress |
+bsky.app              | Bluesky            | social       | bluesky   | bsky.social   | bluesky |
+mastodon.social       | Mastodon           | social       | mastodon  | joinmastodon.org | mastodon |
+stackoverflow.com     | Stack Overflow     | forums       | stackexchange | stackexchange.com,sstatic.net,askubuntu.com,superuser.com | stackoverflow |
+news.ycombinator.com  | Hacker News        | forums       | ycombinator | ycombinator.com | ycombinator |
+medium.com            | Medium             | news         | medium    |               | medium |
+substack.com          | Substack           | news         | substack  |               | substack |
+wikipedia.org         | Wikipedia          | reference    | wikimedia | wikimedia.org,wikidata.org,wiktionary.org,wikimediafoundation.org | wikipedia |
+fandom.com            | Fandom             | reference    | fandom    | wikia.com,nocookie.net | fandom |
+archive.org           | Internet Archive   | reference    | internet-archive |        | internetarchive |
+britannica.com        | Britannica         | reference    | britannica|               | |
+nytimes.com           | The New York Times | news         | nytimes   | nyt.com       | newyorktimes |
+bbc.co.uk             | BBC                | news         | bbc       | bbc.com,bbci.co.uk | bbc |
+theguardian.com       | The Guardian       | news         | guardian  | guim.co.uk    | theguardian |
+washingtonpost.com    | The Washington Post| news         | washingtonpost |          | |
+foxnews.com           | Fox News           | news         | foxcorp   |               | foxnews |
+wsj.com               | The Wall Street Journal | news    | newscorp  |               | |
+bloomberg.com         | Bloomberg          | news         | bloomberg |               | bloomberg |
+reuters.com           | Reuters            | news         | reuters   |               | reuters |
+forbes.com            | Forbes             | news         | forbes    |               | forbes |
+usatoday.com          | USA Today          | news         | gannett   |               | |
+dailymail.co.uk       | Daily Mail         | news         | dmg       |               | |
+spiegel.de            | Der Spiegel        | news         | spiegel   |               | |
+lemonde.fr            | Le Monde           | news         | lemonde   |               | |
+nhk.or.jp             | NHK                | news         | nhk       |               | |
+globo.com             | Globo              | news         | globo     | glbimg.com    | |
+indiatimes.com        | Times of India     | news         | timesgroup|               | |
+apnews.com            | AP News            | news         | ap        |               | |
+npr.org               | NPR                | news         | npr       |               | npr |
+theverge.com          | The Verge          | news         | voxmedia  |               | theverge |
+weather.com           | The Weather Channel| news         | weathercompany |          | |
+accuweather.com       | AccuWeather        | news         | accuweather |             | accuweather |
+ign.com               | IGN                | news         | ziffdavis |               | ign |
+duckduckgo.com        | DuckDuckGo         | search       | duckduckgo|               | duckduckgo |
+search.brave.com      | Brave Search       | search       | brave     | brave.com     | brave |
+ecosia.org            | Ecosia             | search       | ecosia    |               | ecosia |
+perplexity.ai         | Perplexity         | ai           | perplexity|               | perplexity |
+chatgpt.com           | ChatGPT            | ai           | openai    | oaistatic.com,oaiusercontent.com | openai |
+openai.com            | OpenAI Platform    | ai           | openai    | api.openai.com | openai |
+claude.ai             | Claude             | ai           | anthropic |               | claude |
+anthropic.com         | Anthropic API      | ai           | anthropic | api.anthropic.com | anthropic |
+huggingface.co        | Hugging Face       | ai           | huggingface | hf.co       | huggingface |
+midjourney.com        | Midjourney         | ai           | midjourney|               | |
+character.ai          | Character.AI       | ai           | characterai |             | characterdotai |
+deepseek.com          | DeepSeek           | ai           | deepseek  |               | deepseek |
+mistral.ai            | Mistral AI         | ai           | mistral   |               | mistralai |
+replicate.com         | Replicate          | ai           | replicate |               | replicate |
+elevenlabs.io         | ElevenLabs         | ai           | elevenlabs|               | elevenlabs |
+runwayml.com          | Runway             | ai           | runway    |               | |
+cohere.com            | Cohere             | ai           | cohere    |               | |
+groq.com              | Groq               | ai           | groq      |               | |
+cursor.com            | Cursor             | devtools     | anysphere |               | cursor |
+gitlab.com            | GitLab             | code         | gitlab    |               | gitlab |
+bitbucket.org         | Bitbucket          | code         | atlassian |               | bitbucket |
+sourceforge.net       | SourceForge        | code         | sourceforge |             | sourceforge |
+codeberg.org          | Codeberg           | code         | codeberg  |               | codeberg |
+gitee.com             | Gitee              | code         | gitee     |               | gitee |
+pypi.org              | PyPI               | devtools     | psf       | pythonhosted.org | pypi | 54113
+python.org            | Python             | devtools     | psf       |               | python | 54113
+docker.com            | Docker             | devtools     | docker    | docker.io     | docker |
+crates.io             | crates.io          | devtools     | rustfoundation |          | rust |
+rust-lang.org         | Rust               | devtools     | rustfoundation |          | rust |
+nodejs.org            | Node.js            | devtools     | openjs    |               | nodedotjs |
+developer.mozilla.org | MDN Web Docs       | reference    | mozilla   |               | mdnwebdocs |
+mozilla.org           | Mozilla            | nonprofit    | mozilla   | firefox.com   | mozilla |
+jetbrains.com         | JetBrains          | devtools     | jetbrains |               | jetbrains |
+atlassian.com         | Atlassian (Jira, Confluence) | collaboration | atlassian | atlassian.net | atlassian |
+trello.com            | Trello             | collaboration| atlassian |               | trello |
+sentry.io             | Sentry             | devtools     | sentry    |               | sentry |
+datadoghq.com         | Datadog            | devtools     | datadog   |               | datadog |
+newrelic.com          | New Relic          | devtools     | newrelic  |               | newrelic |
+postman.com           | Postman            | devtools     | postman   |               | postman |
+vercel.com            | Vercel             | cloud        | vercel    | vercel.app    | vercel |
+netlify.com           | Netlify            | cloud        | netlify   | netlify.app   | netlify |
+heroku.com            | Heroku             | cloud        | salesforce| herokuapp.com | heroku |
+render.com            | Render             | cloud        | render    | onrender.com  | render |
+fly.io                | Fly.io             | cloud        | flyio     |               | flydotio |
+replit.com            | Replit             | devtools     | replit    |               | replit |
+codepen.io            | CodePen            | devtools     | codepen   |               | codepen |
+jsdelivr.net          | jsDelivr           | cdn          | jsdelivr  |               | jsdelivr |
+unpkg.com             | unpkg              | cdn          | unpkg     |               | |
+cdnjs.com             | cdnjs              | cdn          | cloudflare| cdnjs.cloudflare.com | cdnjs |
+readthedocs.io        | Read the Docs      | reference    | readthedocs | readthedocs.org | readthedocs |
+hashicorp.com         | HashiCorp          | devtools     | ibm       | terraform.io  | hashicorp |
+circleci.com          | CircleCI           | devtools     | circleci  |               | circleci |
+maven.org             | Maven Central      | devtools     | sonatype  |               | apachemaven |
+packagist.org         | Packagist          | devtools     | packagist |               | packagist |
+rubygems.org          | RubyGems           | devtools     | rubycentral |             | rubygems | 54113
+anaconda.com          | Anaconda           | devtools     | anaconda  | anaconda.org  | anaconda |
+unity.com             | Unity              | devtools     | unity     | unity3d.com   | unity |
+supabase.com          | Supabase           | apis         | supabase  | supabase.co   | supabase |
+mongodb.com           | MongoDB Atlas      | apis         | mongodb   |               | mongodb |
+snowflake.com         | Snowflake          | cloud        | snowflake | snowflakecomputing.com | snowflake |
+databricks.com        | Databricks         | cloud        | databricks|               | databricks |
+stripe.com            | Stripe             | payments     | stripe    | stripe.network,js.stripe.com | stripe |
+twilio.com            | Twilio             | apis         | twilio    |               | twilio |
+sendgrid.com          | SendGrid           | email        | twilio    | sendgrid.net  | |
+segment.com           | Segment            | analytics    | twilio    | segment.io    | segment |
+mailchimp.com         | Mailchimp          | ads          | intuit    | list-manage.com | mailchimp |
+algolia.com           | Algolia            | apis         | algolia   | algolia.net   | algolia |
+auth0.com             | Auth0              | identity     | okta      |               | auth0 |
+okta.com              | Okta               | identity     | okta      | oktacdn.com   | okta |
+plaid.com             | Plaid              | apis         | plaid     |               | |
+mapbox.com            | Mapbox             | maps         | mapbox    |               | mapbox |
+digitalocean.com      | DigitalOcean       | cloud        | digitalocean | digitaloceanspaces.com | digitalocean | 14061
+linode.com            | Linode             | cloud        | akamai    |               | linode | 63949
+oracle.com            | Oracle Cloud       | cloud        | oracle    | oraclecloud.com | oracle | 31898
+ibm.com               | IBM Cloud          | cloud        | ibm       |               | ibm | 36351
+ovhcloud.com          | OVHcloud           | cloud        | ovh       | ovh.com,ovh.net | ovh | 16276
+hetzner.com           | Hetzner            | cloud        | hetzner   | hetzner.de,your-server.de | hetzner | 24940
+vultr.com             | Vultr              | cloud        | vultr     |               | vultr | 20473
+scaleway.com          | Scaleway           | cloud        | scaleway  |               | scaleway | 12876
+cloudflare.com        | Cloudflare         | cdn          | cloudflare| cloudflare.net,cloudflare-dns.com,workers.dev,pages.dev,cloudflareinsights.com | cloudflare | 13335
+akamai.com            | Akamai             | cdn          | akamai    | akamaihd.net,akamaized.net,akamaiedge.net,edgekey.net,edgesuite.net,akamai.net | akamai | 20940,16625
+fastly.com            | Fastly             | cdn          | fastly    | fastly.net,fastlylb.net | fastly | 54113
+bunny.net             | Bunny.net          | cdn          | bunny     | b-cdn.net     | | 200325
+cdn77.com             | CDN77              | cdn          | cdn77     |               | | 60068
+godaddy.com           | GoDaddy            | dns          | godaddy   | secureserver.net | godaddy |
+namecheap.com         | Namecheap          | dns          | namecheap |               | namecheap |
+verisign.com          | Verisign           | dns          | verisign  |               | |
+icann.org             | ICANN              | dns          | icann     | iana.org      | icann |
+quad9.net             | Quad9              | dns          | quad9     |               | quad9 |
+1password.com         | 1Password          | identity     | 1password | 1password.ca  | 1password |
+bitwarden.com         | Bitwarden          | identity     | bitwarden |               | bitwarden |
+lastpass.com          | LastPass           | identity     | lastpass  |               | lastpass |
+letsencrypt.org       | Let's Encrypt      | identity     | isrg      |               | letsencrypt |
+duo.com               | Duo                | identity     | cisco     | duosecurity.com | cisco |
+crowdstrike.com       | CrowdStrike        | identity     | crowdstrike |             | crowdstrike |
+notion.so             | Notion             | productivity | notion    | notion.com,notion.site | notion |
+evernote.com          | Evernote           | productivity | evernote  |               | evernote |
+dropbox.com           | Dropbox            | storage      | dropbox   | dropboxusercontent.com,dropboxstatic.com | dropbox | 19679
+box.com               | Box                | storage      | box       |               | box |
+wetransfer.com        | WeTransfer         | storage      | wetransfer|               | wetransfer |
+mega.nz               | MEGA               | storage      | mega      | mega.io       | mega |
+slack.com             | Slack              | collaboration| salesforce| slack-edge.com,slack-imgs.com | slack |
+zoom.us               | Zoom               | video-calls  | zoom      | zoom.com      | zoom | 30103
+webex.com             | Webex              | video-calls  | cisco     |               | webex |
+asana.com             | Asana              | collaboration| asana     |               | asana |
+monday.com            | monday.com         | collaboration| monday    |               | mondaydotcom |
+miro.com              | Miro               | collaboration| miro      |               | miro |
+airtable.com          | Airtable           | productivity | airtable  |               | airtable |
+calendly.com          | Calendly           | productivity | calendly  |               | calendly |
+docusign.com          | Docusign           | business     | docusign  | docusign.net  | docusign |
+grammarly.com         | Grammarly          | productivity | grammarly |               | grammarly |
+zoho.com              | Zoho               | business     | zoho      | zohomail.com  | zoho |
+clickup.com           | ClickUp            | collaboration| clickup   |               | clickup |
+linear.app            | Linear             | collaboration| linear    |               | linear |
+salesforce.com        | Salesforce         | business     | salesforce| force.com,salesforce-sites.com | salesforce | 14340
+hubspot.com           | HubSpot            | business     | hubspot   | hs-scripts.com,hubspot.net | hubspot |
+workday.com           | Workday            | business     | workday   | myworkday.com | workday |
+sap.com               | SAP                | business     | sap       |               | sap |
+servicenow.com        | ServiceNow         | business     | servicenow| service-now.com | servicenow |
+intuit.com            | Intuit (QuickBooks, TurboTax) | business | intuit | turbotax.com,quickbooks.com | intuit |
+shopify.com           | Shopify            | shopping     | shopify   | myshopify.com,shopifycdn.com,shopifysvc.com | shopify |
+indeed.com            | Indeed             | business     | recruit   |               | indeed |
+glassdoor.com         | Glassdoor          | business     | recruit   |               | glassdoor |
+upwork.com            | Upwork             | business     | upwork    |               | upwork |
+fiverr.com            | Fiverr             | business     | fiverr    |               | fiverr |
+zendesk.com           | Zendesk            | business     | zendesk   | zdassets.com  | zendesk |
+figma.com             | Figma              | design       | figma     |               | figma |
+canva.com             | Canva              | design       | canva     |               | canva |
+adobe.com             | Adobe              | design       | adobe     | adobe.io,typekit.net,adobelogin.com | adobe |
+behance.net           | Behance            | design       | adobe     |               | behance |
+dribbble.com          | Dribbble           | design       | dribbble  |               | dribbble |
+unsplash.com          | Unsplash           | design       | unsplash  |               | unsplash |
+shutterstock.com      | Shutterstock       | design       | shutterstock |            | shutterstock |
+freepik.com           | Freepik            | design       | freepik   |               | |
+pexels.com            | Pexels             | design       | canva     |               | pexels |
+ebay.com              | eBay               | shopping     | ebay      | ebay.de,ebay.co.uk,ebayimg.com | ebay |
+walmart.com           | Walmart            | shopping     | walmart   | walmartimages.com | walmart |
+flipkart.com          | Flipkart           | shopping     | walmart   |               | flipkart |
+etsy.com              | Etsy               | shopping     | etsy      | etsystatic.com | etsy |
+target.com            | Target             | shopping     | target    |               | target |
+bestbuy.com           | Best Buy           | shopping     | bestbuy   |               | bestbuy |
+ikea.com              | IKEA               | shopping     | ikea      |               | ikea |
+mercadolibre.com      | Mercado Libre      | shopping     | mercadolibre | mercadolivre.com.br,mercadolibre.com.mx,mercadolibre.com.ar,mlstatic.com | mercadopago |
+rakuten.co.jp         | Rakuten            | shopping     | rakuten   | rakuten.com   | rakuten |
+costco.com            | Costco             | shopping     | costco    |               | |
+homedepot.com         | The Home Depot     | shopping     | homedepot |               | homedepot |
+wayfair.com           | Wayfair            | shopping     | wayfair   |               | |
+zalando.de            | Zalando            | shopping     | zalando   | zalando.com   | zalando |
+allegro.pl            | Allegro            | shopping     | allegro   |               | allegro |
+coupang.com           | Coupang            | shopping     | coupang   |               | |
+craigslist.org        | Craigslist         | shopping     | craigslist|               | craigslist |
+ozon.ru               | Ozon               | shopping     | ozon      |               | |
+wildberries.ru        | Wildberries        | shopping     | wildberries |             | |
+instacart.com         | Instacart          | shopping     | instacart |               | instacart |
+doordash.com          | DoorDash           | shopping     | doordash  |               | doordash |
+uber.com              | Uber               | travel       | uber      | ubereats.com  | uber |
+lyft.com              | Lyft               | travel       | lyft      |               | lyft |
+paypal.com            | PayPal             | payments     | paypal    | paypalobjects.com | paypal |
+venmo.com             | Venmo              | payments     | paypal    |               | venmo |
+squareup.com          | Square             | payments     | block     | square.com    | square |
+cash.app              | Cash App           | payments     | block     |               | cashapp |
+wise.com              | Wise               | payments     | wise      |               | wise |
+klarna.com            | Klarna             | payments     | klarna    |               | klarna |
+adyen.com             | Adyen              | payments     | adyen     |               | adyen |
+visa.com              | Visa               | payments     | visa      |               | visa |
+mastercard.com        | Mastercard         | payments     | mastercard|               | mastercard |
+paytm.com             | Paytm              | payments     | paytm     |               | paytm |
+patreon.com           | Patreon            | payments     | patreon   |               | patreon |
+kickstarter.com       | Kickstarter        | payments     | kickstarter |             | kickstarter |
+revolut.com           | Revolut            | banking      | revolut   |               | revolut |
+chase.com             | Chase              | banking      | jpmorgan  | jpmorgan.com  | chase |
+bankofamerica.com     | Bank of America    | banking      | bofa      |               | bankofamerica |
+wellsfargo.com        | Wells Fargo        | banking      | wellsfargo|               | wellsfargo |
+citi.com              | Citi               | banking      | citi      | citibank.com  | |
+capitalone.com        | Capital One        | banking      | capitalone|               | |
+americanexpress.com   | American Express   | banking      | amex      | aexp-static.com | americanexpress |
+hsbc.com              | HSBC               | banking      | hsbc      | hsbc.co.uk    | hsbc |
+fidelity.com          | Fidelity           | banking      | fidelity  |               | |
+schwab.com            | Charles Schwab     | banking      | schwab    |               | charlesschwab |
+robinhood.com         | Robinhood          | banking      | robinhood |               | robinhood |
+vanguard.com          | Vanguard           | banking      | vanguard  |               | |
+tradingview.com       | TradingView        | banking      | tradingview |             | tradingview |
+investing.com         | Investing.com      | news         | investingcom |            | |
+coinbase.com          | Coinbase           | crypto       | coinbase  |               | coinbase |
+binance.com           | Binance            | crypto       | binance   |               | binance |
+kraken.com            | Kraken             | crypto       | kraken    |               | |
+coinmarketcap.com     | CoinMarketCap      | crypto       | binance   |               | |
+coingecko.com         | CoinGecko          | crypto       | coingecko |               | coingecko |
+metamask.io           | MetaMask           | crypto       | consensys |               | metamask |
+etherscan.io          | Etherscan          | crypto       | etherscan |               | etherscan |
+opensea.io            | OpenSea            | crypto       | opensea   |               | opensea |
+booking.com           | Booking.com        | travel       | bookingholdings | bstatic.com | bookingdotcom |
+agoda.com             | Agoda              | travel       | bookingholdings |         | |
+airbnb.com            | Airbnb             | travel       | airbnb    | muscache.com  | airbnb |
+expedia.com           | Expedia            | travel       | expedia   |               | expedia |
+tripadvisor.com       | Tripadvisor        | travel       | tripadvisor |             | tripadvisor |
+skyscanner.net        | Skyscanner         | travel       | skyscanner|               | skyscanner |
+trip.com              | Trip.com           | travel       | tripcom   | ctrip.com     | tripdotcom |
+openstreetmap.org     | OpenStreetMap      | maps         | osmf      |               | openstreetmap |
+yelp.com              | Yelp               | maps         | yelp      |               | yelp |
+zillow.com            | Zillow             | maps         | zillow    |               | zillow |
+coursera.org          | Coursera           | education    | coursera  |               | coursera |
+khanacademy.org       | Khan Academy       | education    | khanacademy |             | khanacademy |
+duolingo.com          | Duolingo           | education    | duolingo  |               | duolingo |
+udemy.com             | Udemy              | education    | udemy     |               | udemy |
+edx.org               | edX                | education    | edx       |               | edx |
+chegg.com             | Chegg              | education    | chegg     |               | chegg |
+quizlet.com           | Quizlet            | education    | quizlet   |               | quizlet |
+instructure.com       | Canvas LMS         | education    | instructure |             | |
+brainly.com           | Brainly            | education    | brainly   |               | brainly |
+w3schools.com         | W3Schools          | education    | w3schools |               | w3schools |
+geeksforgeeks.org     | GeeksforGeeks      | education    | geeksforgeeks |           | geeksforgeeks |
+leetcode.com          | LeetCode           | education    | leetcode  |               | leetcode |
+researchgate.net      | ResearchGate       | reference    | researchgate |            | researchgate |
+arxiv.org             | arXiv              | reference    | arxiv     |               | arxiv |
+steampowered.com      | Steam              | gaming       | valve     | steamcommunity.com,steamstatic.com | steam | 32590
+epicgames.com         | Epic Games         | gaming       | epicgames | unrealengine.com,fortnite.com | epicgames |
+roblox.com            | Roblox             | gaming       | roblox    | rbxcdn.com    | roblox |
+playstation.com       | PlayStation        | gaming       | sony      | playstation.net | playstation |
+crunchyroll.com       | Crunchyroll        | video        | sony      |               | crunchyroll |
+nintendo.com          | Nintendo           | gaming       | nintendo  | nintendo.net  | nintendo |
+ea.com                | Electronic Arts    | gaming       | ea        |               | ea |
+chess.com             | Chess.com          | gaming       | chesscom  |               | chessdotcom |
+lichess.org           | Lichess            | gaming       | lichess   |               | lichess |
+itch.io               | itch.io            | gaming       | itchio    |               | itchdotio |
+poki.com              | Poki               | gaming       | poki      |               | poki |
+vimeo.com             | Vimeo              | video        | vimeo     | vimeocdn.com  | vimeo |
+dailymotion.com       | Dailymotion        | video        | dailymotion | dmcdn.net   | dailymotion |
+iqiyi.com             | iQIYI              | video        | iqiyi     |               | iqiyi |
+hotstar.com           | JioHotstar         | video        | jiostar   |               | |
+rumble.com            | Rumble             | video        | rumble    |               | rumble |
+kick.com              | Kick               | video        | kick      |               | kick |
+proton.me             | Proton Mail        | email        | proton    | protonmail.com | proton |
+fastmail.com          | Fastmail           | email        | fastmail  |               | fastmail |
+gmx.net               | GMX                | email        | united-internet | gmx.com,gmx.de | gmx |
+web.de                | WEB.DE             | email        | united-internet |         | |
+tuta.com              | Tuta               | email        | tuta      | tutanota.com  | tuta |
+criteo.com            | Criteo             | ads          | criteo    | criteo.net    | criteo |
+taboola.com           | Taboola            | ads          | taboola   |               | |
+outbrain.com          | Outbrain           | ads          | outbrain  |               | |
+adnxs.com             | Xandr              | ads          | microsoft |               | |
+thetradedesk.com      | The Trade Desk     | ads          | thetradedesk | adsrvr.org | |
+applovin.com          | AppLovin           | ads          | applovin  |               | |
+pubmatic.com          | PubMatic           | ads          | pubmatic  |               | |
+rubiconproject.com    | Magnite            | ads          | magnite   |               | |
+hotjar.com            | Hotjar             | analytics    | contentsquare |           | hotjar |
+mixpanel.com          | Mixpanel           | analytics    | mixpanel  |               | mixpanel |
+amplitude.com         | Amplitude          | analytics    | amplitude |               | |
+scorecardresearch.com | Comscore           | analytics    | comscore  |               | |
+similarweb.com        | Similarweb         | analytics    | similarweb |              | similarweb |
+semrush.com           | Semrush            | analytics    | semrush   |               | semrush |
+usa.gov               | USA.gov            | government   | usgov     |               | |
+irs.gov               | IRS                | government   | usgov     |               | |
+gov.uk                | GOV.UK             | government   | ukgov     |               | govdotuk |
+europa.eu             | European Union     | government   | eu        |               | |
+un.org                | United Nations     | government   | un        |               | |
+who.int               | WHO                | health       | who       |               | |
+nih.gov               | NIH                | health       | usgov     | ncbi.nlm.nih.gov | |
+cdc.gov               | CDC                | health       | usgov     |               | |
+nhs.uk                | NHS                | health       | ukgov     |               | |
+webmd.com             | WebMD              | health       | webmd     |               | |
+mayoclinic.org        | Mayo Clinic        | health       | mayoclinic|               | |
+healthline.com        | Healthline         | health       | healthline|               | |
+myfitnesspal.com      | MyFitnessPal       | health       | myfitnesspal |            | |
+strava.com            | Strava             | health       | strava    |               | strava |
+gofundme.com          | GoFundMe           | nonprofit    | gofundme  |               | gofundme |
+change.org            | Change.org         | nonprofit    | changeorg |               | |
+eff.org               | EFF                | nonprofit    | eff       |               | eff |

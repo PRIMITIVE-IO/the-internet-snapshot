@@ -1,0 +1,72 @@
+# Organisations that own several services and/or operate networks.
+# Orgs referenced by services.psv but not listed here are created automatically (one org per service).
+# slug | label | country | operated ASNs (comma) | primary category (optional; default = category of its most popular service) | icon
+google        | Google                 | US | 15169,396982,36040,19527 | search       | google
+meta          | Meta                   | US | 32934                    | social       | meta
+microsoft     | Microsoft              | US | 8075,8068,14413,36459    | productivity | microsoft
+amazon        | Amazon                 | US | 16509,14618,46489        | shopping     | amazon
+apple         | Apple                  | US | 714,6185                 |              | apple
+netflix       | Netflix                | US | 2906,40027               | video        | netflix
+cloudflare    | Cloudflare             | US | 13335                    | cdn          | cloudflare
+akamai        | Akamai                 | US | 20940,16625,63949        | cdn          | akamai
+fastly        | Fastly                 | US | 54113                    | cdn          | fastly
+bytedance     | ByteDance              | CN | 396986,138699            | social       | bytedance
+tencent       | Tencent                | CN | 45090,132203             | messaging    | tencentqq
+riotgames     | Riot Games             | US | 6507                     | gaming       | riotgames
+alibaba       | Alibaba Group          | CN | 45102,37963              | shopping     | alibabadotcom
+antgroup      | Ant Group              | CN |                          | payments     | alipay
+baidu         | Baidu                  | CN | 55967,38365              | search       | baidu
+yandex        | Yandex                 | RU | 13238                    | search       |
+vk            | VK                     | RU | 47764                    | social       | vk
+xcorp         | X Corp                 | US | 13414                    | social       | x
+wikimedia     | Wikimedia Foundation   | US | 14907                    | reference    | wikipedia
+valve         | Valve                  | US | 32590                    | gaming       | valve
+dropbox       | Dropbox                | US | 19679                    | storage      | dropbox
+salesforce    | Salesforce             | US | 14340                    | business     | salesforce
+zoom          | Zoom                   | US | 30103                    | video-calls  | zoom
+telegram      | Telegram               | AE | 62041                    | messaging    | telegram
+spotify       | Spotify                | SE | 8403                     | music        | spotify
+naver         | Naver                  | KR | 23576                    | search       | naver
+kakao         | Kakao                  | KR | 10158                    | messaging    | kakaotalk
+lycorp        | LY Corporation         | JP | 38631                    | search       | line
+yahoo         | Yahoo                  | US | 10310                    | news         | yahoo
+oracle        | Oracle                 | US | 31898                    | cloud        | oracle
+ibm           | IBM                    | US | 36351                    | cloud        | ibm
+digitalocean  | DigitalOcean           | US | 14061                    | cloud        | digitalocean
+ovh           | OVHcloud               | FR | 16276                    | cloud        | ovh
+hetzner       | Hetzner                | DE | 24940                    | cloud        | hetzner
+vultr         | Vultr                  | US | 20473                    | cloud        | vultr
+scaleway      | Scaleway               | FR | 12876                    | cloud        | scaleway
+bunny         | BunnyWay               | SI | 200325                   | cdn          |
+cdn77         | CDN77                  | GB | 60068                    | cdn          |
+disney        | The Walt Disney Company| US |                          | video        |
+wbd           | Warner Bros. Discovery | US |                          | video        |
+comcast       | Comcast                | US | 7922                     | video        |
+paramount     | Paramount              | US |                          | video        |
+sony          | Sony                   | JP |                          | gaming       | sony
+atlassian     | Atlassian              | AU |                          | collaboration| atlassian
+automattic    | Automattic             | US | 2635                     | news         | automattic
+psf           | Python Software Foundation | US |                      | devtools     | python
+openai        | OpenAI                 | US |                          | ai           | openai
+anthropic     | Anthropic              | US | 399358                   | ai           | anthropic
+stackexchange | Stack Exchange         | US |                          | forums       | stackoverflow
+okta          | Okta                   | US |                          | identity     | okta
+twilio        | Twilio                 | US |                          | apis         | twilio
+block         | Block                  | US |                          | payments     | square
+paypal        | PayPal                 | US | 17012                    | payments     | paypal
+jpmorgan      | JPMorgan Chase         | US |                          | banking      | chase
+bookingholdings | Booking Holdings     | US |                          | travel       | bookingdotcom
+proton        | Proton                 | CH |                          | email        | proton
+united-internet | United Internet      | DE | 8560                     | email        |
+intuit        | Intuit                 | US |                          | business     | intuit
+cisco         | Cisco                  | US | 109                      | video-calls  | cisco
+rakuten       | Rakuten                | JP |                          | shopping     | rakuten
+walmart       | Walmart                | US |                          | shopping     | walmart
+adobe         | Adobe                  | US |                          | design       | adobe
+pdd           | PDD Holdings           | CN |                          | shopping     | temu
+mozilla       | Mozilla                | US |                          | nonprofit    | mozilla
+ycombinator   | Y Combinator           | US |                          | forums       | ycombinator
+quora         | Quora                  | US |                          | forums       | quora
+binance       | Binance                | KY |                          | crypto       | binance
+xai           | xAI                    | US |                          | ai           | x
+consensys     | Consensys              | US |                          | crypto       | metamask

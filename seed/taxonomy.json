@@ -1,0 +1,86 @@
+{
+  "_comment": "Functional taxonomy for the service shell. Realm order is the order realms are seeded around the sphere: neighbours in this list end up adjacent. 'anchor' is the [azimuth, elevation] (degrees, Unity convention) where the realm's sector is grown from; az=0, el=0 is straight ahead of the viewer.",
+  "realms": [
+    {"slug": "knowledge",     "label": "Knowledge & Discovery",   "color": "#AED581", "anchor": [-40, 30], "categories": [
+      {"slug": "search",      "label": "Search"},
+      {"slug": "reference",   "label": "Reference & Wikis"},
+      {"slug": "education",   "label": "Education"},
+      {"slug": "maps",        "label": "Maps & Local"}
+    ]},
+    {"slug": "communication", "label": "Communication",            "color": "#4FC3F7", "anchor": [0, 0], "categories": [
+      {"slug": "social",      "label": "Social Networks"},
+      {"slug": "messaging",   "label": "Messaging"},
+      {"slug": "email",       "label": "Email"},
+      {"slug": "video-calls", "label": "Video Conferencing"},
+      {"slug": "forums",      "label": "Communities & Forums"}
+    ]},
+    {"slug": "media",         "label": "Media & Entertainment",    "color": "#F06292", "anchor": [55, 5], "categories": [
+      {"slug": "video",       "label": "Video Streaming"},
+      {"slug": "music",       "label": "Music & Audio"},
+      {"slug": "gaming",      "label": "Gaming"},
+      {"slug": "news",        "label": "News & Publishing"}
+    ]},
+    {"slug": "commerce",      "label": "Commerce & Finance",       "color": "#FFB74D", "anchor": [115, 0], "categories": [
+      {"slug": "shopping",    "label": "E-commerce & Marketplaces"},
+      {"slug": "payments",    "label": "Payments"},
+      {"slug": "banking",     "label": "Banking & Investing"},
+      {"slug": "crypto",      "label": "Crypto"},
+      {"slug": "travel",      "label": "Travel & Mobility"}
+    ]},
+    {"slug": "adtech",        "label": "Advertising & Analytics",  "color": "#FF8A65", "anchor": [160, -30], "categories": [
+      {"slug": "ads",         "label": "Advertising"},
+      {"slug": "analytics",   "label": "Analytics & Measurement"}
+    ]},
+    {"slug": "cloud",         "label": "Cloud & Edge",             "color": "#7986CB", "anchor": [180, 20], "categories": [
+      {"slug": "cloud",       "label": "Cloud Platforms"},
+      {"slug": "cdn",         "label": "CDN & Edge"},
+      {"slug": "dns",         "label": "DNS & Domains"},
+      {"slug": "identity",    "label": "Identity & Security"}
+    ]},
+    {"slug": "developer",     "label": "Developer & AI",           "color": "#64FFDA", "anchor": [-130, 10], "categories": [
+      {"slug": "code",        "label": "Code Hosting"},
+      {"slug": "devtools",    "label": "Developer Tools & Registries"},
+      {"slug": "ai",          "label": "AI Platforms"},
+      {"slug": "apis",        "label": "APIs & Backend Services"}
+    ]},
+    {"slug": "work",          "label": "Work & Productivity",      "color": "#B39DDB", "anchor": [-80, -5], "categories": [
+      {"slug": "productivity","label": "Office & Productivity"},
+      {"slug": "collaboration","label": "Team Collaboration"},
+      {"slug": "storage",     "label": "Cloud Storage & Files"},
+      {"slug": "business",    "label": "Business & HR SaaS"},
+      {"slug": "design",      "label": "Design & Creative"}
+    ]},
+    {"slug": "society",       "label": "Society & Public",         "color": "#FFF176", "anchor": [0, 72], "categories": [
+      {"slug": "government",  "label": "Government"},
+      {"slug": "health",      "label": "Health & Fitness"},
+      {"slug": "nonprofit",   "label": "Nonprofit & Causes"}
+    ]},
+    {"slug": "longtail",      "label": "The Long Tail",            "color": "#BDBDBD", "anchor": [30, -70], "categories": [
+      {"slug": "web",         "label": "General Web"},
+      {"slug": "adult",       "label": "Adult"}
+    ]}
+  ],
+  "network_roles": [
+    {"id": "tier1",      "label": "Tier-1 transit",          "color": "#FFD54F"},
+    {"id": "transit",    "label": "Transit carrier",         "color": "#FFB300"},
+    {"id": "access",     "label": "Access / eyeball ISP",    "color": "#81C784"},
+    {"id": "cloud",      "label": "Cloud provider",          "color": "#7986CB"},
+    {"id": "cdn",        "label": "CDN / edge",              "color": "#4DB6AC"},
+    {"id": "content",    "label": "Content network",         "color": "#BA68C8"},
+    {"id": "hosting",    "label": "Hosting / data center",   "color": "#A1887F"},
+    {"id": "enterprise", "label": "Enterprise",              "color": "#90A4AE"},
+    {"id": "education",  "label": "Research & education",    "color": "#64B5F6"},
+    {"id": "government", "label": "Government",              "color": "#E57373"},
+    {"id": "ixp",        "label": "Internet exchange point", "color": "#FFFFFF"},
+    {"id": "region",     "label": "Region",                  "color": "#ECEFF1"}
+  ],
+  "regions": [
+    {"slug": "north-america", "label": "North America",           "lat": 45,  "lon": -100},
+    {"slug": "latin-america", "label": "Latin America & Caribbean","lat": -12, "lon": -60},
+    {"slug": "europe",        "label": "Europe",                  "lat": 50,  "lon": 12},
+    {"slug": "africa",        "label": "Africa",                  "lat": 3,   "lon": 20},
+    {"slug": "middle-east",   "label": "Middle East",             "lat": 27,  "lon": 46},
+    {"slug": "asia",          "label": "Asia",                    "lat": 30,  "lon": 105},
+    {"slug": "oceania",       "label": "Oceania",                 "lat": -25, "lon": 140}
+  ]
+}

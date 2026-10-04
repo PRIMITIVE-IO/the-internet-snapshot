@@ -1,0 +1,16 @@
+[project]
+name = "internet-snapshot"
+version = "0.1.0"
+description = "A living, frozen 3D snapshot of the internet built from public datasets, served to Primitive environment clients."
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = ["numpy>=1.26", "scipy>=1.11", "healpy>=1.16", "httpx>=0.27", "fastapi>=0.110", "uvicorn>=0.29"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "matplotlib>=3.8"]
+
+[tool.setuptools]
+packages = { find = { include = ["internet_snapshot*"] } }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

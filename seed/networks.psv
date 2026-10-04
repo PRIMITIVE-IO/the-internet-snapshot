@@ -1,0 +1,154 @@
+# Curated backbone: networks whose role is known. Long-tail networks come from public AS datasets.
+# Role: tier1 | transit | access | cloud | cdn | content | hosting | education | government | enterprise
+# The tier1 list approximates CAIDA's inferred transit-free clique; CAIDA as-rel2 overrides it when enabled.
+# asn | label | role | country | org (optional)
+174    | Cogent                    | tier1   | US |
+701    | Verizon Business          | tier1   | US |
+1299   | Arelion                   | tier1   | SE |
+2914   | NTT Global IP Network     | tier1   | US |
+3257   | GTT                       | tier1   | US |
+3320   | Deutsche Telekom          | tier1   | DE |
+3356   | Lumen                     | tier1   | US |
+3491   | PCCW Global               | tier1   | HK |
+5511   | Orange International Carriers | tier1 | FR |
+6453   | Tata Communications       | tier1   | IN |
+6461   | Zayo                      | tier1   | US |
+6762   | Telecom Italia Sparkle    | tier1   | IT |
+6830   | Liberty Global            | tier1   | NL |
+7018   | AT&T                      | tier1   | US |
+12956  | Telxius (Telefonica)      | tier1   | ES |
+6939   | Hurricane Electric        | transit | US |
+9002   | RETN                      | transit | GB |
+4637   | Telstra International     | transit | HK |
+1273   | Vodafone Global           | transit | GB |
+4134   | China Telecom (CHINANET)  | transit | CN |
+4809   | China Telecom CN2         | transit | CN |
+4837   | China Unicom              | transit | CN |
+58453  | China Mobile International| transit | HK |
+9808   | China Mobile              | access  | CN |
+7473   | Singtel                   | transit | SG |
+4766   | Korea Telecom             | access  | KR |
+9318   | SK Broadband              | access  | KR |
+2516   | KDDI                      | access  | JP |
+17676  | SoftBank                  | access  | JP |
+4713   | NTT OCN                   | access  | JP |
+9498   | Bharti Airtel             | transit | IN |
+55836  | Reliance Jio              | access  | IN |
+12389  | Rostelecom                | transit | RU |
+20485  | TransTelecom              | transit | RU |
+3216   | Beeline (VimpelCom)       | access  | RU |
+8359   | MTS                       | access  | RU |
+7922   | Comcast                   | access  | US | comcast
+20115  | Charter Spectrum          | access  | US |
+22773  | Cox Communications        | access  | US |
+5650   | Frontier                  | access  | US |
+21928  | T-Mobile USA              | access  | US |
+22394  | Verizon Wireless          | access  | US |
+7155   | Viasat                    | access  | US |
+14593  | Starlink (SpaceX)         | access  | US |
+812    | Rogers                    | access  | CA |
+577    | Bell Canada               | access  | CA |
+852    | Telus                     | access  | CA |
+2856   | BT                        | access  | GB |
+5089   | Virgin Media              | access  | GB |
+5607   | Sky UK                    | access  | GB |
+3215   | Orange France             | access  | FR |
+12322  | Free (Iliad)              | access  | FR |
+15557  | SFR                       | access  | FR |
+3209   | Vodafone Germany          | access  | DE |
+6805   | Telefonica Germany        | access  | DE |
+3269   | TIM                       | access  | IT |
+3352   | Telefonica Spain          | access  | ES |
+1136   | KPN                       | access  | NL |
+33915  | VodafoneZiggo             | access  | NL |
+5432   | Proximus                  | access  | BE |
+3303   | Swisscom                  | access  | CH |
+8447   | A1 Telekom Austria        | access  | AT |
+5617   | Orange Polska             | access  | PL |
+9121   | Turk Telekom              | access  | TR |
+8452   | Telecom Egypt (TE Data)   | access  | EG |
+37457  | Telkom SA                 | access  | ZA |
+36994  | Vodacom                   | access  | ZA |
+29465  | MTN Nigeria               | access  | NG |
+33771  | Safaricom                 | access  | KE |
+25019  | Saudi Telecom (STC)       | access  | SA |
+5384   | Etisalat (e&)             | access  | AE |
+8151   | Telmex (Uninet)           | access  | MX |
+28573  | Claro Brasil              | access  | BR |
+18881  | Vivo (Telefonica Brasil)  | access  | BR |
+26615  | TIM Brasil                | access  | BR |
+7303   | Telecom Argentina         | access  | AR |
+3462   | Chunghwa Telecom (HiNet)  | access  | TW |
+4760   | HKT                       | access  | HK |
+7552   | Viettel                   | access  | VN |
+45899  | VNPT                      | access  | VN |
+7713   | Telkom Indonesia          | access  | ID |
+9299   | PLDT                      | access  | PH |
+4788   | TM Net                    | access  | MY |
+1221   | Telstra                   | access  | AU |
+4804   | Optus                     | access  | AU |
+7545   | TPG Telecom               | access  | AU |
+4771   | Spark New Zealand         | access  | NZ |
+15169  | Google                    | content | US | google
+396982 | Google Cloud              | cloud   | US | google
+36040  | YouTube                   | content | US | google
+19527  | Google (2)                | content | US | google
+32934  | Meta                      | content | US | meta
+8075   | Microsoft                 | cloud   | US | microsoft
+8068   | Microsoft (Bing)          | content | US | microsoft
+14413  | LinkedIn                  | content | US | microsoft
+36459  | GitHub                    | content | US | microsoft
+16509  | Amazon (AWS)              | cloud   | US | amazon
+14618  | Amazon (AWS us-east-1)    | cloud   | US | amazon
+46489  | Twitch                    | content | US | amazon
+714    | Apple                     | content | US | apple
+6185   | Apple (Austin)            | content | US | apple
+2906   | Netflix                   | content | US | netflix
+40027  | Netflix Open Connect      | cdn     | US | netflix
+13335  | Cloudflare                | cdn     | US | cloudflare
+20940  | Akamai International      | cdn     | NL | akamai
+16625  | Akamai Technologies       | cdn     | US | akamai
+63949  | Akamai Connected Cloud (Linode) | cloud | US | akamai
+54113  | Fastly                    | cdn     | US | fastly
+396986 | ByteDance (TikTok)        | content | US | bytedance
+138699 | ByteDance (Asia)          | content | SG | bytedance
+45090  | Tencent                   | content | CN | tencent
+132203 | Tencent Cloud             | cloud   | CN | tencent
+6507   | Riot Games                | content | US | riotgames
+45102  | Alibaba Cloud             | cloud   | CN | alibaba
+37963  | Alibaba (Hangzhou)        | content | CN | alibaba
+55967  | Baidu (Beijing)           | content | CN | baidu
+38365  | Baidu                     | content | CN | baidu
+13238  | Yandex                    | content | RU | yandex
+47764  | VK                        | content | RU | vk
+13414  | X (Twitter)               | content | US | xcorp
+14907  | Wikimedia                 | content | US | wikimedia
+32590  | Valve                     | content | US | valve
+19679  | Dropbox                   | content | US | dropbox
+14340  | Salesforce                | content | US | salesforce
+30103  | Zoom                      | content | US | zoom
+62041  | Telegram                  | content | GB | telegram
+8403   | Spotify                   | content | SE | spotify
+23576  | Naver                     | content | KR | naver
+10158  | Kakao                     | content | KR | kakao
+38631  | LINE                      | content | JP | lycorp
+10310  | Yahoo                     | content | US | yahoo
+31898  | Oracle Cloud              | cloud   | US | oracle
+36351  | IBM Cloud                 | cloud   | US | ibm
+14061  | DigitalOcean              | hosting | US | digitalocean
+16276  | OVHcloud                  | hosting | FR | ovh
+24940  | Hetzner                   | hosting | DE | hetzner
+20473  | Vultr (Constant)          | hosting | US | vultr
+12876  | Scaleway                  | hosting | FR | scaleway
+200325 | Bunny.net                 | cdn     | SI | bunny
+60068  | CDN77 (DataCamp)          | cdn     | GB | cdn77
+22822  | Edgio (Limelight)         | cdn     | US |
+15133  | Edgecast                  | cdn     | US |
+2635   | Automattic                | content | US | automattic
+399358 | Anthropic                 | content | US | anthropic
+17012  | PayPal                    | content | US | paypal
+8560   | IONOS (United Internet)   | hosting | DE | united-internet
+109    | Cisco                     | enterprise | US | cisco
+11537  | Internet2                 | education | US |
+20965  | GEANT                     | education | NL |
+749    | US DoD Network Information Center | government | US |
