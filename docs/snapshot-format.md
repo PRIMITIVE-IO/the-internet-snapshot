@@ -23,7 +23,7 @@ GET {base}/snapshots/latest.json
 
 - the API server's `/v1` prefix, for example `https://<host>/v1`;
 - any static mirror of `public/`:
-  - The canonical public host is **GitHub Pages: `http://documentation.primitive.io/the-internet-snapshot`** (see §10).
+  - The canonical public host is **GitHub Pages: `https://documentation.primitive.io/the-internet-snapshot`** (see §10).
   - Mirror: `https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public`. It carries the snapshots, but not the Pages-only `icons/` or `ip2asn/`.
 
 Static mirrors serve every file. The query endpoints (`/v1/route`, `/v1/whereami`, `/v1/search`, `/v1/node`, `/v1/overlay`) need the API server.
@@ -385,11 +385,11 @@ GET /healthz                      → { "ok": true, "snapshot_id": … }
 
 ## 10. Hosting: GitHub Pages and static-only operation
 
-**Base URL:** `http://documentation.primitive.io/the-internet-snapshot`. Every file below is relative to it.
+**Base URL:** `https://documentation.primitive.io/the-internet-snapshot`. Every file below is relative to it.
 
 - The PRIMITIVE-IO organisation serves GitHub Pages from its custom domain, and `https://primitive-io.github.io/the-internet-snapshot/` redirects there.
-- Once *Enforce HTTPS* is enabled for that domain, use `https://`.
-- `agent.json` always carries the URL that GitHub reports for the current deployment, so read the base from there.
+- HTTPS is enforced, so always use `https://`.
+- `agent.json` carries the base URL of the current deployment.
 
 ```
 snapshots/latest.json                      mutable pointer (≈10 min CDN cache)
@@ -621,12 +621,12 @@ It turns events into an overlay. It can do this locally (§13), or with the stat
 ```jsonc
 {
   "name": "the-internet-snapshot", "description": "…",
-  "data": { "base": "http://documentation.primitive.io/the-internet-snapshot", "latest": "snapshots/latest.json",
+  "data": { "base": "https://documentation.primitive.io/the-internet-snapshot", "latest": "snapshots/latest.json",
             "contract": "https://github.com/PRIMITIVE-IO/the-internet-snapshot/blob/main/docs/snapshot-format.md" },
   "api": { "base": null },          // set when an API server is deployed
   "mcp": { "command": "python", "args": ["-m", "internet_snapshot", "mcp"],
            "install": "pip install git+https://github.com/PRIMITIVE-IO/the-internet-snapshot",
-           "env": { "SNAPSHOT_BASE_URL": "http://documentation.primitive.io/the-internet-snapshot" } },
+           "env": { "SNAPSHOT_BASE_URL": "https://documentation.primitive.io/the-internet-snapshot" } },
   "tools": ["search", "describe", "locate", "route", "site_graph", "list_endpoints", "code_universe", "whereami"],
   "attribution": "…"
 }

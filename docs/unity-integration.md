@@ -12,7 +12,7 @@ All coordinates in the snapshot are already in **Unity conventions**: left-hande
 **Public base URL:** GitHub Pages, with no server needed:
 
 ```
-http://documentation.primitive.io/the-internet-snapshot
+https://documentation.primitive.io/the-internet-snapshot
 ```
 
 Mirror: `https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public`. It has the snapshots only, without icons or ip2asn.

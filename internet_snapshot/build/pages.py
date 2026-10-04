@@ -22,9 +22,9 @@ from ..sources import SOURCES
 from ..sources import parsers as P
 from .icons import build_icons
 
-# GitHub Pages URL. The PRIMITIVE-IO organisation serves Pages from a custom domain; the workflow passes the
-# URL that actions/configure-pages reports (--site-url), so this is only the fallback.
-PAGES_BASE = "http://documentation.primitive.io/the-internet-snapshot"
+# GitHub Pages URL. The PRIMITIVE-IO organisation serves Pages from a custom domain with HTTPS enforced; the
+# workflow passes the URL that actions/configure-pages reports (--site-url), so this is only the fallback.
+PAGES_BASE = "https://documentation.primitive.io/the-internet-snapshot"
 REPO = "https://github.com/PRIMITIVE-IO/the-internet-snapshot"
 
 
@@ -121,6 +121,8 @@ Code: MIT. Data: see `attribution` in the manifest. It includes CC BY sources th
 
 def build_pages(api_base: str | None = None, ip2asn: bool = True, site_url: str | None = None) -> dict:
     base = (site_url or PAGES_BASE).rstrip("/")
+    if base.startswith("http://"):  # HTTPS is enforced on the Pages domain; never publish a downgrade
+        base = "https://" + base[len("http://"):]
     sid, sdir, manifest = _latest()
     out = PUBLIC_DIR
     glyphs, brands = _used_icons(sdir, manifest)

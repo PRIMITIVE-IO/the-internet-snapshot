@@ -342,14 +342,14 @@ Hosting follows the common practice for a GitHub repository: **GitHub Actions bu
                 └────────────┬──────────────────────────────┬─────────────────┘
                              ▼                              ▼
               GitHub Pages (static, CDN)            GHCR image (API server)
-   http://documentation.primitive.io/the-internet-snapshot/   ghcr.io/primitive-io/the-internet-snapshot
+   https://documentation.primitive.io/the-internet-snapshot/   ghcr.io/primitive-io/the-internet-snapshot
      snapshots/ · icons/ · ip2asn/ · agent.json ·          optional: run anywhere; the GitHub-preferred
      llms.txt · viewer                                     managed host is Azure Container Apps
 ```
 
 ### 9.1 GitHub Pages: the gateway
 
-**Canonical base URL:** **`http://documentation.primitive.io/the-internet-snapshot/`**
+**Canonical base URL:** **`https://documentation.primitive.io/the-internet-snapshot/`**
 
 | Path | Contents |
 |---|---|
