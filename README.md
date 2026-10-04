@@ -4,7 +4,7 @@ A living, viewable snapshot of the entire accessible internet: services grouped 
 
 It does **no crawling of its own**. It only uses public datasets that others already publish: CrUX, iptoasn/origin-asn, ipverse, the Public Suffix List and DSPL; CAIDA, PeeringDB and Wikidata are planned or opt-in. See [`docs/research/`](docs/research/).
 
-**Live (GitHub Pages):** <https://primitive-io.github.io/the-internet-snapshot/>. This is the viewer. The data is under `snapshots/latest.json`, and agents start at `agent.json` / `llms.txt`.
+**Live (GitHub Pages):** <http://documentation.primitive.io/the-internet-snapshot/>. This is the viewer. It is the organisation's custom Pages domain; `primitive-io.github.io/the-internet-snapshot` redirects there. The data is under `snapshots/latest.json`, and agents start at `agent.json` / `llms.txt`.
 **Mirror:** <https://raw.githubusercontent.com/PRIMITIVE-IO/the-internet-snapshot/main/public/snapshots/latest.json>
 
 ## Documents
@@ -67,7 +67,7 @@ One-time setup: **Settings → Pages → Source: GitHub Actions**.
 
 ```bash
 pip install 'internet-snapshot[mcp] @ git+https://github.com/PRIMITIVE-IO/the-internet-snapshot'
-SNAPSHOT_BASE_URL=https://primitive-io.github.io/the-internet-snapshot python -m internet_snapshot mcp
+SNAPSHOT_BASE_URL=http://documentation.primitive.io/the-internet-snapshot python -m internet_snapshot mcp
 ```
 
 Tools: `search`, `describe`, `locate`, `route`, `whereami`, `site_graph`, `list_endpoints`, `code_universe`,

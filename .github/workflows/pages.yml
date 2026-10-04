@@ -29,8 +29,11 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt -r requirements-build.txt
       - run: python -m internet_snapshot fetch --strict --only originasn lucide simpleicons_svg simpleicons
-      - run: python -m internet_snapshot pages --api-base "${{ vars.SNAPSHOT_API_BASE }}"
-      - uses: actions/configure-pages@v5
+      - id: pages
+        uses: actions/configure-pages@v5
+      - run: >-
+          python -m internet_snapshot pages --api-base "${{ vars.SNAPSHOT_API_BASE }}"
+          --site-url "${{ steps.pages.outputs.base_url }}"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public

@@ -51,7 +51,7 @@ def cmd_build(args) -> int:
 
 def cmd_pages(args) -> int:
     from .build.pages import build_pages
-    print(build_pages(api_base=args.api_base or None, ip2asn=not args.no_ip2asn))
+    print(build_pages(api_base=args.api_base or None, ip2asn=not args.no_ip2asn, site_url=args.site_url or None))
     return 0
 
 
@@ -94,6 +94,7 @@ def main(argv=None) -> int:
     pg = sub.add_parser("pages", help="assemble the GitHub Pages site in public/ (icons, ip2asn, agent files, viewer)")
     pg.add_argument("--api-base", default=None, help="public URL of a deployed API server, if any")
     pg.add_argument("--no-ip2asn", action="store_true")
+    pg.add_argument("--site-url", default=None, help="public URL of the Pages site (from actions/configure-pages)")
     pg.set_defaults(fn=cmd_pages)
 
     m = sub.add_parser("mcp", help="run the MCP server (stdio) for AI agents")

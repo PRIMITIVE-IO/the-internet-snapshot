@@ -22,7 +22,9 @@ from ..sources import SOURCES
 from ..sources import parsers as P
 from .icons import build_icons
 
-PAGES_BASE = "https://primitive-io.github.io/the-internet-snapshot"
+# GitHub Pages URL. The PRIMITIVE-IO organisation serves Pages from a custom domain; the workflow passes the
+# URL that actions/configure-pages reports (--site-url), so this is only the fallback.
+PAGES_BASE = "http://documentation.primitive.io/the-internet-snapshot"
 REPO = "https://github.com/PRIMITIVE-IO/the-internet-snapshot"
 
 
@@ -65,21 +67,21 @@ def build_ip2asn(out: Path) -> int:
     return len(shards)
 
 
-def agent_descriptor(manifest: dict, api_base: str | None) -> dict:
+def agent_descriptor(manifest: dict, api_base: str | None, base: str = PAGES_BASE) -> dict:
     return {
         "name": "the-internet-snapshot",
         "description": ("A frozen, hierarchical 3D map of the internet built from public datasets: services grouped "
                         "by function, the networks that carry them, per-site endpoint graphs and the GitHub code "
                         "universe. Use it to search the internet's structure, locate URLs, enumerate a service's API "
                         "endpoints and estimate network routes."),
-        "data": {"base": PAGES_BASE, "latest": "snapshots/latest.json",
+        "data": {"base": base, "latest": "snapshots/latest.json",
                  "snapshot_id": manifest["snapshot_id"],
                  "contract": f"{REPO}/blob/main/docs/snapshot-format.md",
                  "icons": "icons/index.json", "ip2asn": "ip2asn/v4/index.json"},
         "api": {"base": api_base},
         "mcp": {"command": "python", "args": ["-m", "internet_snapshot", "mcp"],
                 "install": f"pip install 'internet-snapshot[mcp] @ git+{REPO}'",
-                "env": {"SNAPSHOT_BASE_URL": PAGES_BASE}},
+                "env": {"SNAPSHOT_BASE_URL": base}},
         "tools": ["search", "describe", "locate", "route", "site_graph", "list_endpoints", "code_universe",
                   "whereami", "activity_overlay"],
         "attribution": manifest.get("attribution"),
@@ -117,7 +119,8 @@ Code: MIT. Data: see `attribution` in the manifest. It includes CC BY sources th
 """
 
 
-def build_pages(api_base: str | None = None, ip2asn: bool = True) -> dict:
+def build_pages(api_base: str | None = None, ip2asn: bool = True, site_url: str | None = None) -> dict:
+    base = (site_url or PAGES_BASE).rstrip("/")
     sid, sdir, manifest = _latest()
     out = PUBLIC_DIR
     glyphs, brands = _used_icons(sdir, manifest)
@@ -126,8 +129,8 @@ def build_pages(api_base: str | None = None, ip2asn: bool = True) -> dict:
         shutil.rmtree(icons_dir)
     idx = build_icons(icons_dir, glyphs, brands)
     shards = build_ip2asn(out / "ip2asn" / "v4") if ip2asn and SOURCES["originasn"].available() else 0
-    (out / "agent.json").write_text(json.dumps(agent_descriptor(manifest, api_base), indent=1))
-    (out / "llms.txt").write_text(LLMS_TXT.format(base=PAGES_BASE, repo=REPO, sid=sid))
+    (out / "agent.json").write_text(json.dumps(agent_descriptor(manifest, api_base, base), indent=1))
+    (out / "llms.txt").write_text(LLMS_TXT.format(base=base, repo=REPO, sid=sid))
     shutil.copy(ROOT / "viewer" / "index.html", out / "index.html")
     (out / ".nojekyll").write_text("")
     return {"snapshot_id": sid, "icons": len(idx["atlases"][0]["cells"]), "ip2asn_shards": shards}

@@ -11,4 +11,4 @@ public/agent.json
 public/llms.txt
 public/index.html
 public/.nojekyll
-build/
+/build/

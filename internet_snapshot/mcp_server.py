@@ -5,7 +5,7 @@ agent can run it next to itself with no hosted server. Tool results use the cont
 so the Primitive environment can place an agent's findings and activity in the 3D map.
 
     pip install 'internet-snapshot[mcp] @ git+https://github.com/PRIMITIVE-IO/the-internet-snapshot'
-    SNAPSHOT_BASE_URL=https://primitive-io.github.io/the-internet-snapshot python -m internet_snapshot mcp
+    SNAPSHOT_BASE_URL=http://documentation.primitive.io/the-internet-snapshot python -m internet_snapshot mcp
 """
 
 from __future__ import annotations
